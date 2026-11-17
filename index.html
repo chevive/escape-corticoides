@@ -83,13 +83,13 @@
   <h1>Laboratorio en cuarentena</h1>
   <p class="muted">Farmacología · Biotecnología · Corticoides (Katzung, cap. 39)</p>
   <div class="rules">
-    <p>Un lote de glucocorticoides se contaminó y las puertas se cerraron. Cada laboratorio tiene <b>6 candados</b>, uno por sala.</p>
+    <p>Un lote de glucocorticoides se contaminó y las puertas se cerraron. Cada laboratorio tiene <b>6 candados</b>, uno por sala, y la nota es sobre 20.</p>
     <ul>
-      <li>En cada sala, cada grupo recibe <b>su propia pregunta</b> en su turno.</li>
-      <li>Responden en voz alta dentro del tiempo. <b>Acierto</b>: abren su candado y suman el tiempo que tardaron.</li>
-      <li><b>Error o tiempo agotado</b>: el candado queda cerrado y suman el tiempo completo más 30 s de penalización.</li>
-      <li>Cada laboratorio tiene <b>2 antídotos 50/50</b>: eliminan dos opciones y suman 15 s.</li>
-      <li>Gana el laboratorio con <b>menor tiempo total</b>. No se puede ayudar a otro grupo.</li>
+      <li>En cada sala, cada grupo recibe <b>su propia pregunta</b> en su turno, con tiempo en pantalla.</li>
+      <li>Tienen <b>2 intentos</b>. Si aciertan, abren su candado y ganan <b>3,33 puntos</b>.</li>
+      <li>Si fallan los 2 intentos (o se les acaba el tiempo dos veces), <b>quedan fuera</b> del juego y conservan los puntos que ya tenían.</li>
+      <li>Abrir los 6 candados = <b>20/20</b>. No hay ayudas y no se puede ayudar a otro grupo.</li>
+      <li>Empate en la nota: gana el grupo que tardó menos.</li>
     </ul>
   </div>
   <div class="setup">
@@ -107,6 +107,7 @@
 <section class="main hidden" id="vMain">
   <div class="left">
     <div class="turn" id="turnLbl">Turno de G1</div>
+    <div class="muted" id="tryLbl" style="font-size:1.2rem;font-weight:600">Intento 1 de 2</div>
     <div id="readyBox" class="center" style="padding:10px">
       <p style="font-size:1.6rem">Laboratorio <b id="readyG">G1</b>, prepárense.</p>
       <p class="muted">El docente muestra la pregunta y empieza a correr el tiempo.</p>
@@ -122,12 +123,11 @@
     <div class="timer" id="timer">60</div>
     <div class="ctl">
       <button class="btn" id="bShow">Mostrar pregunta</button>
-      <button class="btn warn hidden" id="b5050">Antídoto 50/50 (+15 s)</button>
       <button class="btn ghost hidden" id="bPause">Pausar</button>
       <button class="btn ghost hidden" id="bTimeout">Se acabó el tiempo</button>
       <button class="btn hidden" id="bNext">Siguiente turno</button>
     </div>
-    <div class="muted" style="font-size:.85rem;text-align:center">El docente toca la opción que dice el grupo.<br>Teclas: A–D responder · Espacio pausar · Enter seguir</div>
+    <div class="muted" style="font-size:.85rem;text-align:center">El docente toca la opción que dice el grupo.<br>Teclas: A–D responder · Espacio pausar · Enter seguir<br>2 intentos por grupo · sin ayudas</div>
   </div>
 </section>
 
@@ -200,12 +200,13 @@
       ['Si el cortisol no baja tras 1 mg de dexametasona en la noche, ¿qué se sospecha?', ['Síndrome de Cushing','Enfermedad de Addison','Hipotiroidismo','Nada, es normal'], 'En una persona sana la dexametasona frena el eje y el cortisol baja.'],
       ['En la amenaza de parto prematuro se da betametasona o dexametasona a la madre. ¿Para qué?', ['Para madurar el pulmón fetal','Para detener las contracciones','Para bajar la presión','Para evitar infecciones'], 'Aceleran la producción de surfactante en el pulmón del feto.'] ]}
   ];
-  const PIN='1711', KEY='escape-corti-proj-v2', PEN_FAIL=30, PEN_ANTI=15;
+  const PIN='1711', KEY='escape-corti-proj-v3', TRIES=2;
   const L=['A','B','C','D'];
   const $=id=>document.getElementById(id);
   const mmss=s=>{s=Math.max(0,Math.round(s));const m=Math.floor(s/60),x=s%60;return (m<10?'0':'')+m+':'+(x<10?'0':'')+x;};
+  const PTS = 20/SALAS.length;
+  const fmtN = n => (Math.round(n*100)/100).toFixed(2).replace('.',',');
 
-  // mezcla determinista
   function rng(seed){return function(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};}
   function order(s,k){const r=rng(1000*s+k+7);const a=[0,1,2,3];for(let i=3;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
@@ -215,15 +216,22 @@
   let st=load();
 
   function newGame(nG,T){
-    st={nG,T,sala:0,turn:0,phase:'ready',res:[],anti:Array(nG).fill(0),left:T,runFrom:null,picked:null,hid:[]};
+    st={nG,T,sala:0,turn:0,phase:'ready',res:[],out:Array(nG).fill(false),left:T,runFrom:null,tries:0,usedPrev:0,wrong:[]};
     for(let g=0;g<nG;g++) st.res.push(Array(SALAS.length).fill(null));
     save();
   }
-  // en la sala s, el turno k le toca al grupo (s+k) % nG; el grupo usa la pregunta k (si hay menos de 6 grupos, sobran preguntas)
   const groupOf=(s,k)=>(s+k)%st.nG;
-  const groupTotal=g=>st.res[g].reduce((a,r)=>a+(r?r.t:0),0)+st.anti[g]*PEN_ANTI;
+  const groupTime=g=>st.res[g].reduce((a,r)=>a+(r?r.t:0),0);
   const groupOk=g=>st.res[g].filter(r=>r&&r.ok).length;
+  const nota=g=>groupOk(g)*PTS;
   const remaining=()=>st.runFrom? st.left-(Date.now()-st.runFrom)/1000 : st.left;
+
+  // busca el siguiente turno de un grupo que siga en juego; devuelve false si se acabó la sala
+  function seekTurn(){
+    while(st.turn<st.nG && st.out[groupOf(st.sala,st.turn)]) st.turn++;
+    return st.turn<st.nG;
+  }
+  function anyAlive(){ return st.out.some(o=>!o); }
 
   function show(ids){['vSetup','vTop','vMain','vBetween','board'].forEach(v=>$(v).classList.toggle('hidden',!ids.includes(v)));}
 
@@ -234,7 +242,8 @@
     for(let g=0;g<st.nG;g++){
       const locks=st.res[g].map(r=>r===null?'🔒':(r.ok?'🔓':'❌')).join('');
       const d=document.createElement('div'); d.className='tile'+(g===cur?' now':'');
-      d.innerHTML='<div class="g">G'+(g+1)+'</div><div class="locks">'+locks+'</div><div class="tt">'+mmss(groupTotal(g))+'</div><div class="an">Antídotos: '+(2-st.anti[g])+'</div>';
+      if(st.out[g]) d.style.opacity='.55';
+      d.innerHTML='<div class="g">G'+(g+1)+'</div><div class="locks">'+locks+'</div><div class="tt">'+fmtN(nota(g))+' / 20</div><div class="an">'+(st.out[g]?'<span style="color:var(--bad);font-weight:700">FUERA</span>':'Tiempo '+mmss(groupTime(g)))+'</div>';
       b.appendChild(d);
     }
   }
@@ -245,36 +254,40 @@
     show(['vTop','vMain','board']);
     const s=st.sala, k=st.turn, g=groupOf(s,k), Q=SALAS[s].q[k];
     $('salaTitle').textContent='Sala '+(s+1)+' de '+SALAS.length+' · '+SALAS[s].t;
-    $('salaSub').textContent='Turno '+(k+1)+' de '+st.nG;
+    $('salaSub').textContent='Turno '+(k+1)+' de '+st.nG+' · cada candado vale '+fmtN(PTS)+' puntos';
     $('turnLbl').textContent='Turno de G'+(g+1);
+    $('tryLbl').textContent = st.phase==='result' ? '' : 'Intento '+(st.tries+1)+' de '+TRIES;
+    $('tryLbl').style.color = st.tries>0 ? 'var(--bad)' : 'var(--muted)';
     $('readyG').textContent='G'+(g+1);
     const ready=st.phase==='ready';
     $('readyBox').classList.toggle('hidden',!ready);
     $('qBox').classList.toggle('hidden',ready);
     $('bShow').classList.toggle('hidden',!ready);
-    $('b5050').classList.toggle('hidden',st.phase!=='ask');
-    $('b5050').disabled = st.anti[g]>=2 || st.hid.length>0;
     $('bPause').classList.toggle('hidden',st.phase!=='ask');
     $('bPause').textContent = st.runFrom ? 'Pausar' : 'Seguir';
     $('bTimeout').classList.toggle('hidden',st.phase!=='ask');
     $('bNext').classList.toggle('hidden',st.phase!=='result');
-    $('bNext').textContent = (k+1>=st.nG) ? (s+1>=SALAS.length ? 'Ver resultado final' : 'Fin de la sala') : 'Siguiente turno';
+    $('bNext').textContent = 'Siguiente';
     if(!ready){
       $('qText').textContent=Q[0];
       const ord=order(s,k), box=$('opts'); box.innerHTML='';
       ord.forEach((oi,pos)=>{
         const bt=document.createElement('button'); bt.className='opt';
         bt.innerHTML='<span class="L">'+L[pos]+'</span><span>'+Q[1][oi]+'</span>';
-        if(st.hid.includes(oi)) bt.classList.add('gone');
-        if(st.phase==='result'){ if(oi===0) bt.classList.add('right'); else if(st.picked===oi) bt.classList.add('wrong'); bt.disabled=true; }
-        else bt.onclick=()=>answer(oi);
+        if(st.wrong.includes(oi)){ bt.classList.add('wrong'); bt.disabled=true; }
+        if(st.phase==='result'){ if(oi===0) bt.classList.add('right'); bt.disabled=true; }
+        else if(!st.wrong.includes(oi)) bt.onclick=()=>answer(oi);
         box.appendChild(bt);
       });
       const r=st.res[g][s];
-      $('expl').classList.toggle('hidden',st.phase!=='result');
+      const showExpl = st.phase==='result' || (st.phase==='ask' && st.tries>0);
+      $('expl').classList.toggle('hidden',!showExpl);
       if(st.phase==='result'){
         $('expl').className='expl'+(r&&r.ok?'':' bad');
-        $('expl').innerHTML=(r&&r.ok?'<b>🔓 Candado abierto</b> en '+mmss(r.t)+'. ':'<b>❌ Candado cerrado</b> (+'+(st.T+PEN_FAIL)+' s). ')+Q[2];
+        $('expl').innerHTML=(r&&r.ok?'<b>🔓 Candado abierto</b> (+'+fmtN(PTS)+' puntos, '+mmss(r.t)+'). ':'<b>❌ Dos intentos fallidos: G'+(g+1)+' queda fuera.</b> ')+Q[2];
+      } else if(showExpl){
+        $('expl').className='expl bad';
+        $('expl').innerHTML='<b>✖ Incorrecto.</b> Les queda un intento.';
       }
     }
     renderBoard(); tick();
@@ -285,32 +298,48 @@
     const fin=st.phase==='final';
     $('betBadge').textContent= fin ? 'Cuarentena levantada' : 'Sala terminada';
     $('betTitle').textContent= fin ? 'Resultado final' : 'Fin de la sala '+(st.sala+1)+' · '+SALAS[st.sala].t;
-    $('betSub').textContent= fin ? 'Gana el menor tiempo total.' : 'Así va el marcador (menor tiempo total va primero).';
+    $('betSub').textContent= fin ? 'Nota sobre 20: cada candado vale '+fmtN(PTS)+' puntos.' : 'Así va el marcador.';
     $('bNextSala').classList.toggle('hidden',fin);
-    const rows=[...Array(st.nG).keys()].map(g=>({g,t:groupTotal(g),ok:groupOk(g),a:st.anti[g]})).sort((a,b)=>a.t-b.t||b.ok-a.ok);
-    let h='<tr><th>Puesto</th><th>Laboratorio</th><th>Candados abiertos</th><th>Antídotos</th><th>Tiempo total</th></tr>';
-    rows.forEach((r,i)=>{const c=i===0?'pod1':i===1?'pod2':i===2?'pod3':'';h+='<tr class="'+c+'"><td class="n">'+(i+1)+'.º</td><td class="disp">G'+(r.g+1)+'</td><td class="n">'+r.ok+' de '+SALAS.length+'</td><td class="n">'+r.a+'</td><td class="n">'+mmss(r.t)+'</td></tr>';});
+    const rows=[...Array(st.nG).keys()].map(g=>({g,n:nota(g),ok:groupOk(g),t:groupTime(g),out:st.out[g]})).sort((a,b)=>b.n-a.n||a.t-b.t);
+    let h='<tr><th>Puesto</th><th>Laboratorio</th><th>Candados</th><th>Nota / 20</th><th>Tiempo</th><th>Estado</th></tr>';
+    rows.forEach((r,i)=>{const c=i===0?'pod1':i===1?'pod2':i===2?'pod3':'';h+='<tr class="'+c+'"><td class="n">'+(i+1)+'.º</td><td class="disp">G'+(r.g+1)+'</td><td class="n">'+r.ok+' de '+SALAS.length+'</td><td class="n"><b>'+fmtN(r.n)+'</b></td><td class="n">'+mmss(r.t)+'</td><td>'+(r.out?'<span style="color:var(--bad)">Fuera</span>':(fin&&r.ok===SALAS.length?'<span style="color:var(--ok)">Escapó</span>':'En juego'))+'</td></tr>';});
     $('rankTbl').innerHTML=h;
-    renderBoard();
   }
 
+  function fail(oi,full){
+    const g=groupOf(st.sala,st.turn);
+    const used = full ? st.T : st.T - Math.max(0,remaining());
+    if(oi!==null && oi!==undefined) st.wrong.push(oi);
+    if(st.tries+1 < TRIES){
+      st.tries++; st.usedPrev += used; st.left=st.T; st.runFrom=Date.now();
+    } else {
+      st.res[g][st.sala]={ok:false,t:st.usedPrev+used};
+      st.out[g]=true; st.phase='result'; st.runFrom=null;
+    }
+    save(); render();
+  }
   function answer(oi){
     if(st.phase!=='ask') return;
-    const g=groupOf(st.sala,st.turn), used=st.T-remaining(), ok=oi===0;
-    st.res[g][st.sala]={ok, t: ok? used : st.T+PEN_FAIL};
-    st.picked=oi; st.phase='result'; st.runFrom=null; save(); render();
+    if(oi===0){
+      const g=groupOf(st.sala,st.turn);
+      st.res[g][st.sala]={ok:true,t:st.usedPrev+(st.T-Math.max(0,remaining()))};
+      st.phase='result'; st.runFrom=null; save(); render();
+    } else fail(oi);
   }
-  function timeout(){
-    if(st.phase!=='ask') return;
-    const g=groupOf(st.sala,st.turn);
-    st.res[g][st.sala]={ok:false,t:st.T+PEN_FAIL};
-    st.picked=null; st.phase='result'; st.runFrom=null; st.left=0; save(); render();
-  }
+  function timeout(){ if(st.phase==='ask') fail(null,true); }
+  function resetTurn(){ st.tries=0; st.usedPrev=0; st.wrong=[]; st.left=st.T; st.runFrom=null; }
   function next(){
     if(st.phase!=='result') return;
-    st.turn++; st.hid=[]; st.picked=null; st.left=st.T; st.runFrom=null;
-    if(st.turn>=st.nG){ st.phase = (st.sala+1>=SALAS.length) ? 'final' : 'between'; }
-    else st.phase='ready';
+    st.turn++; resetTurn();
+    if(!anyAlive()){ st.phase='final'; }
+    else if(seekTurn()){ st.phase='ready'; }
+    else { st.phase = (st.sala+1>=SALAS.length) ? 'final' : 'between'; }
+    save(); render();
+  }
+  function nextSala(){
+    st.sala++; st.turn=0; resetTurn();
+    if(!anyAlive()||st.sala>=SALAS.length){ st.phase='final'; }
+    else if(seekTurn()) st.phase='ready'; else st.phase='final';
     save(); render();
   }
 
@@ -319,19 +348,14 @@
   $('bPause').onclick=()=>{ if(st.runFrom){st.left=remaining();st.runFrom=null;} else st.runFrom=Date.now(); save(); render(); };
   $('bTimeout').onclick=timeout;
   $('bNext').onclick=next;
-  $('b5050').onclick=()=>{
-    const g=groupOf(st.sala,st.turn); if(st.anti[g]>=2||st.hid.length) return;
-    const wrong=[1,2,3]; const r=rng(77+st.sala*10+st.turn); const keep=wrong[Math.floor(r()*3)];
-    st.hid=wrong.filter(x=>x!==keep); st.anti[g]++; save(); render();
-  };
-  $('bNextSala').onclick=()=>{st.sala++;st.turn=0;st.phase='ready';st.left=st.T;st.runFrom=null;st.hid=[];save();render();};
+  $('bNextSala').onclick=nextSala;
 
   document.addEventListener('keydown',e=>{
     if(!st||document.activeElement.tagName==='INPUT') return;
     const k=e.key.toUpperCase();
-    if(st.phase==='ask' && L.includes(k)){ const oi=order(st.sala,st.turn)[L.indexOf(k)]; if(!st.hid.includes(oi)) answer(oi); }
+    if(st.phase==='ask' && L.includes(k)){ const oi=order(st.sala,st.turn)[L.indexOf(k)]; if(!st.wrong.includes(oi)) answer(oi); }
     else if(e.key===' ' && st.phase==='ask'){ e.preventDefault(); $('bPause').click(); }
-    else if(e.key==='Enter'){ if(st.phase==='ready') $('bShow').click(); else if(st.phase==='result') next(); else if(st.phase==='between') $('bNextSala').click(); }
+    else if(e.key==='Enter'){ if(st.phase==='ready') $('bShow').click(); else if(st.phase==='result') next(); else if(st.phase==='between') nextSala(); }
   });
 
   $('lnkReset').onclick=e=>{e.preventDefault();$('pinIn').value='';$('ovReset').classList.add('on');};
@@ -339,7 +363,7 @@
   $('rYes').onclick=()=>{ if($('pinIn').value.trim()===PIN){ st=null; mem=null; try{localStorage.removeItem(KEY);}catch(e){} $('ovReset').classList.remove('on'); render(); } };
 
   function tick(){
-    if(!st||st.phase!=='ask'){ if(st&&st.phase==='ready') {$('timer').textContent=st.T;$('timer').classList.remove('low');} if(st&&st.phase==='result'){$('timer').classList.remove('low');} return; }
+    if(!st||st.phase!=='ask'){ if(st&&st.phase==='ready'){$('timer').textContent=st.T;$('timer').classList.remove('low');} if(st&&st.phase==='result'){$('timer').classList.remove('low');} return; }
     const r=remaining();
     $('timer').textContent=Math.max(0,Math.ceil(r));
     $('timer').classList.toggle('low',r<=10);
