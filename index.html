@@ -88,7 +88,7 @@
 <!-- HUD -->
 <div class="hud hidden" id="hud"><div class="wrap">
   <span class="grpTag" id="hudGrp">G1</span>
-  <span class="clock" id="hudClock">00:00</span>
+  <span style="text-align:center;line-height:1.15"><span class="clock" id="hudClock">75:00</span><br><span class="anti" id="hudRoom">Sala 10:00</span></span>
   <span class="anti" id="hudAnti">Antídotos: 2</span>
 </div></div>
 
@@ -100,11 +100,12 @@
   <div class="panel">
     <p>En la planta de <b>BioCorti S.A.</b> se contaminó un lote de glucocorticoides y el sistema de seguridad cerró todas las puertas. Para salir, su laboratorio debe abrir <b>7 salas</b> con lo que sabe de los corticoides.</p>
     <ul class="rules">
+      <li>Cada laboratorio tiene <b>75 minutos</b> en su celular, desde que entra. Cada sala tiene <b>10 minutos</b> sugeridos.</li>
       <li>Cada sala se abre con un código que sale del capítulo.</li>
       <li>Código equivocado: <b>1 minuto de cuarentena</b> sin poder intentar.</li>
-      <li>Tienen <b>2 antídotos</b> (pistas). Cada uno resta 0,5 puntos.</li>
+      <li>Tienen <b>2 antídotos</b> (pistas). Cada uno <b>suma 2 minutos</b> a su tiempo.</li>
       <li>Pueden usar el libro, sus apuntes y las diapositivas; internet no.</li>
-      <li>Gana el primer laboratorio en salir.</li>
+      <li>Gana el laboratorio con el <b>menor tiempo oficial</b> (tiempo real + antídotos).</li>
     </ul>
   </div>
   <div class="panel">
@@ -138,13 +139,14 @@
 
 <!-- END -->
 <main class="wrap hidden" id="vEnd">
-  <span class="badge" style="color:var(--accent);border-color:var(--accent)">Cuarentena levantada</span>
-  <h1 style="margin-top:10px" class="okc">¡Escaparon!</h1>
-  <p>Muestren esta pantalla al docente.</p>
+  <span class="badge" id="endBadge" style="color:var(--accent);border-color:var(--accent)">Cuarentena levantada</span>
+  <h1 style="margin-top:10px" class="okc" id="endTitle">¡Escaparon!</h1>
+  <p id="endMsg">Muestren esta pantalla al docente.</p>
   <div class="panel" style="text-align:center">
     <div class="muted" id="endGrp">Laboratorio G1</div>
+    <div class="muted" style="margin-top:6px">Tiempo oficial</div>
     <div class="big okc" id="endTime">00:00</div>
-    <div class="muted" id="endAnti">Antídotos usados: 0</div>
+    <div class="muted" id="endAnti">Tiempo real 00:00 + antídotos 0 × 2 min</div>
     <table class="sum" id="endTable"></table>
   </div>
   <div class="panel">
@@ -164,7 +166,7 @@
     <button class="btn ghost" id="pPause">Pausar</button>
     <button class="btn ghost" id="pReset">Reiniciar</button>
   </div>
-  <p class="muted" style="margin-top:28px;max-width:720px">7 salas · código equivocado = 1 minuto de cuarentena · 2 antídotos por laboratorio · se puede usar el libro, los apuntes y las diapositivas</p>
+  <p class="muted" style="margin-top:28px;max-width:720px">7 salas · código equivocado = 1 minuto de cuarentena · 2 antídotos por laboratorio (+2 min cada uno) · gana el menor tiempo oficial · se puede usar el libro, los apuntes y las diapositivas</p>
   <p style="margin-top:18px"><a href="#" id="pBack" style="color:var(--muted)">Volver al juego</a></p>
 </div>
 
@@ -183,16 +185,18 @@
 
 <div class="ov" id="ovAnti"><div class="ovcard">
   <h2>¿Usar un antídoto?</h2>
-  <p class="muted">Les queda <span id="antiLeft">2</span>. Cada antídoto resta 0,5 puntos.</p>
+  <p class="muted">Les queda <span id="antiLeft">2</span>. Cada antídoto suma 2 minutos a su tiempo oficial.</p>
   <div class="row2"><button class="btn ghost" id="antiNo">No</button><button class="btn warn" id="antiYes">Sí, usar</button></div>
 </div></div>
 
 <div class="ov" id="ovRules"><div class="ovcard" style="text-align:left">
   <h2>Reglas</h2>
   <ul class="rules">
+    <li>Tienen 75 minutos en total; cada sala tiene 10 minutos sugeridos.</li>
     <li>Escriban el código y toquen <b>Abrir</b>.</li>
     <li>Código equivocado: 1 minuto de cuarentena.</li>
-    <li>2 antídotos por laboratorio; cada uno resta 0,5 puntos.</li>
+    <li>2 antídotos por laboratorio; cada uno suma 2 minutos a su tiempo.</li>
+    <li>Gana el menor tiempo oficial: tiempo real + antídotos.</li>
     <li>En cada sala presenta el código un integrante distinto: el docente puede preguntarle por qué.</li>
     <li>Libro, apuntes y diapositivas, sí; internet, no.</li>
   </ul>
@@ -257,7 +261,7 @@
         Q('E','Prueba de supresión con dexametasona: si el cortisol de la mañana no baja después de 1 mg de dexametasona en la noche, se sospecha…',['insuficiencia suprarrenal','síndrome de Cushing','hipotiroidismo','nada, es normal']),
       hint:'La espironolactona también se usa como diurético ahorrador de potasio.' }
   ];
-  const QUAR = 60, PIN = '1711', KEY = 'escape-corti-v1';
+  const QUAR = 60, PEN = 120, LIMIT = 75*60, ROOM_LIM = 10*60, PIN = '1711', KEY = 'escape-corti-v1';
 
   // ---------- estado ----------
   let mem = null;
@@ -290,11 +294,11 @@
   function render(){
     if(location.hash==='#proyector'){ show('vProj'); return; }
     if(!st){ show('vStart'); return; }
-    if(st.room>=ROOMS.length){ renderEnd(); return; }
+    if(st.room>=ROOMS.length || st.timeout){ renderEnd(); return; }
     show('vRoom');
     const r = ROOMS[st.room];
     $('hudGrp').textContent = 'G'+st.g;
-    $('hudAnti').textContent = 'Antídotos: '+(2-st.anti.length);
+    $('hudAnti').textContent = 'Antídotos: '+(2-st.anti.length)+(st.anti.length? ' · +'+(st.anti.length*2)+' min' : '');
     $('roomNum').textContent = 'Sala '+(st.room+1)+' de '+ROOMS.length;
     $('roomTitle').textContent = r.t;
     $('roomBody').innerHTML = r.b;
@@ -311,20 +315,29 @@
   }
   function renderEnd(){
     show('vEnd');
-    const total = (st.end - st.start)/1000;
+    const total = (st.end - st.start)/1000, pen = st.anti.length*PEN, off = Math.min(LIMIT, total + pen);
+    const tout = !!st.timeout;
+    $('endBadge').textContent = tout ? 'Tiempo agotado' : 'Cuarentena levantada';
+    $('endBadge').style.color = $('endBadge').style.borderColor = tout ? 'var(--alarm)' : 'var(--accent)';
+    $('endTitle').textContent = tout ? 'Se acabó el tiempo' : '¡Escaparon!';
+    $('endTitle').className = tout ? 'alarm' : 'okc';
+    $('endTime').className = 'big ' + (tout ? 'alarm' : 'okc');
+    $('endMsg').textContent = tout ? ('Abrieron '+st.room+' de '+ROOMS.length+' salas. Muestren esta pantalla al docente.') : 'Muestren esta pantalla al docente.';
     $('endGrp').textContent = 'Laboratorio G'+st.g;
-    $('endTime').textContent = mmss(total);
-    $('endAnti').textContent = 'Antídotos usados: '+st.anti.length;
+    $('endTime').textContent = mmss(off);
+    $('endAnti').textContent = 'Tiempo real '+mmss(total)+' + antídotos '+st.anti.length+' × 2 min';
     let prev = st.start, rows='';
     st.times.forEach((t,i)=>{ rows += '<tr><td>Sala '+(i+1)+' · '+ROOMS[i].t+'</td><td>'+mmss((t-prev)/1000)+'</td></tr>'; prev=t; });
-    rows += '<tr><td><b>Total</b></td><td><b>'+mmss(total)+'</b></td></tr>';
+    rows += '<tr><td>Tiempo real</td><td>'+mmss(total)+'</td></tr>';
+    rows += '<tr><td>Penalización por antídotos</td><td>+'+mmss(pen)+'</td></tr>';
+    rows += '<tr><td><b>Tiempo oficial</b></td><td><b>'+mmss(off)+'</b></td></tr>';
     $('endTable').innerHTML = rows;
   }
 
   // ---------- código ----------
   $('codeForm').addEventListener('submit', e=>{
     e.preventDefault();
-    if(!st || st.room>=ROOMS.length) return;
+    if(!st || st.room>=ROOMS.length || st.timeout) return;
     if(Date.now() < st.qUntil){ quarantine(); return; }
     const c = norm($('codeIn').value);
     if(!c) return;
@@ -359,8 +372,16 @@
 
   // ---------- reloj ----------
   function tick(){
-    if(st && st.room<ROOMS.length){
-      $('hudClock').textContent = mmss((Date.now()-st.start)/1000);
+    if(st && st.room<ROOMS.length && !st.timeout){
+      const used = (Date.now()-st.start)/1000 + st.anti.length*PEN;
+      const rem = LIMIT - used;
+      if(rem <= 0){ st.timeout = true; st.end = Date.now(); save(st); $('ovQ').classList.remove('on'); render(); return; }
+      $('hudClock').textContent = mmss(Math.ceil(rem));
+      $('hudClock').classList.toggle('alarm', rem <= 300);
+      const rStart = st.times.length ? st.times[st.times.length-1] : st.start;
+      const rRem = ROOM_LIM - (Date.now()-rStart)/1000;
+      $('hudRoom').textContent = rRem > 0 ? 'Sala '+mmss(Math.ceil(rRem)) : 'Sala +'+mmss(-rRem);
+      $('hudRoom').classList.toggle('alarm', rRem <= 0);
       const left = Math.ceil((st.qUntil - Date.now())/1000);
       if(left>0){ $('ovQ').classList.add('on'); $('ovQTime').textContent = left; }
       else $('ovQ').classList.remove('on');

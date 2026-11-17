@@ -13,11 +13,12 @@ En la planta de BioCorti S.A. se contaminó un lote de glucocorticoides y el sis
 ## Cómo se juega (estudiantes)
 
 1. Abran el enlace en **un celular por grupo**.
-2. Elijan su laboratorio (G1 a G6) y toquen **Entrar al laboratorio**. Empieza el cronómetro.
+2. Elijan su laboratorio (G1 a G6) y toquen **Entrar al laboratorio**. Empieza su cuenta regresiva de **75 minutos**; arriba también ven un reloj de **10 minutos sugeridos por sala**.
 3. Lean la sala, resuelvan las preguntas, escriban el código y toquen **Abrir**.
 4. Si el código es correcto, se abre la sala siguiente. Si es incorrecto, quedan **1 minuto en cuarentena** sin poder intentar.
-5. Tienen **2 antídotos**: cada uno muestra la pista de la sala en la que están y resta 0,5 puntos.
-6. Al abrir la sala 7 aparece **¡Escaparon!** con el tiempo total y el de cada sala. Muestren esa pantalla al docente.
+5. Tienen **2 antídotos**: cada uno muestra la pista de la sala en la que están y **suma 2 minutos** a su tiempo (se descuentan de los 75).
+6. Al abrir la sala 7 aparece **¡Escaparon!** con el tiempo oficial (tiempo real + antídotos) y el de cada sala. Si se acaban los 75 minutos aparece **Se acabó el tiempo**, con las salas que abrieron. Muestren esa pantalla al docente.
+7. **Gana el laboratorio con el menor tiempo oficial.** Los que no escapan se ordenan por número de salas abiertas.
 
 **Reglas**
 
@@ -49,7 +50,8 @@ En la planta de BioCorti S.A. se contaminó un lote de glucocorticoides y el sis
 
 - **Proyector:** abrir el enlace con `#proyector` y tocar **Iniciar**. Tiene botones para pausar y reiniciar; se pone rojo en los últimos 5 minutos.
 - **Reiniciar un celular:** enlace «Reiniciar (solo docente)» al pie de la página, con la clave del docente.
-- **Calificación sugerida (sobre 20):** 2 puntos por sala abierta (máximo 14), explicación de su sala de 0 a 3, orden de salida (1.º 3 · 2.º 2,5 · 3.º 2 · 4.º 1,5 · 5.º 1 · 6.º 0,5) y −0,5 por antídoto.
+- **Ranking por tiempo:** cada grupo tiene su propia cuenta regresiva de 75 minutos en el celular. Gana el menor tiempo oficial (tiempo real + 2 minutos por antídoto); los que no escapan se ordenan por salas abiertas.
+- **Calificación sugerida (sobre 20):** 2 puntos por sala abierta (máximo 14), explicación de su sala de 0 a 3 y posición en el ranking por tiempo (1.º 3 · 2.º 2,5 · 3.º 2 · 4.º 1,5 · 5.º 1 · 6.º 0,5).
 - Los códigos, las pistas y las respuestas están en la clave del docente, que no se publica.
 
 ## Especificaciones técnicas
@@ -60,7 +62,7 @@ En la planta de BioCorti S.A. se contaminó un lote de glucocorticoides y el sis
 - **Vistas:** inicio (elección de grupo), sala, final y proyector (`#proyector`). Ventanas: cuarentena, sala desbloqueada, antídoto, reglas y reinicio.
 - **Estado:** se guarda en el `localStorage` de cada navegador, con la clave `escape-corti-v1`: grupo, hora de inicio, sala actual, hora de apertura de cada sala, antídotos usados y fin de la cuarentena. El proyector usa la clave `escape-corti-proj`. No hay marcador compartido entre celulares.
 - **Códigos:** no están escritos en la página. Se guarda solo el hash FNV-1a de 32 bits del texto `corti|<número de sala de 0 a 6>|<CÓDIGO>`. El código se normaliza antes de compararlo: mayúsculas, sin espacios, sin guiones y sin otros símbolos.
-- **Parámetros:** cuarentena de 60 s (`QUAR`), 2 antídotos por grupo, cuenta regresiva de 75 min (`TOTAL`) y clave del docente para reiniciar (`PIN`).
+- **Parámetros:** cuarentena de 60 s (`QUAR`), 2 antídotos por grupo con penalización de 120 s cada uno (`PEN`), tiempo límite de 75 min por grupo (`LIMIT`), 10 min sugeridos por sala (`ROOM_LIM`), cuenta regresiva del proyector de 75 min (`TOTAL`) y clave del docente para reiniciar (`PIN`).
 
 ## Cómo modificar una sala
 
