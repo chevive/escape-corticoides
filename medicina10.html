@@ -88,7 +88,8 @@
       <li>Cada equipo tiene <b>5 minutos en total</b>. Su reloj corre solo en su turno, como en el ajedrez.</li>
       <li>En cada sala, cada equipo recibe <b>su propio caso</b> en su turno.</li>
       <li>Tienen <b>2 intentos</b> por pregunta. Si aciertan, abren su candado y ganan <b>3,33 puntos</b>.</li>
-      <li>Si fallan los 2 intentos o se les acaba su tiempo, <b>quedan fuera</b> y conservan los puntos que ya tenían.</li>
+      <li>Si fallan los 2 intentos, <b>pierden esa pregunta</b> (0 puntos) y <b>siguen jugando</b> por los puntos que quedan.</li>
+      <li>Si se les acaban sus 5 minutos, ya no pueden responder y conservan los puntos que tienen.</li>
       <li>Abrir los 6 candados = <b>20/20</b>. No hay ayudas y no se puede ayudar a otro grupo.</li>
     </ul>
   </div>
@@ -126,7 +127,7 @@
       <button class="btn ghost hidden" id="bPause">Pausar</button>
       <button class="btn hidden" id="bNext">Siguiente turno</button>
     </div>
-    <div class="muted" style="font-size:.85rem;text-align:center">El docente toca la opción que dice el grupo.<br>Teclas: A–D responder · Espacio pausar · Enter seguir<br>2 intentos por pregunta · reloj por grupo · sin ayudas</div>
+    <div class="muted" style="font-size:.85rem;text-align:center">El docente toca la opción que dice el grupo.<br>Teclas: A–D responder · Espacio pausar · Enter seguir<br>2 intentos por pregunta · si falla, pierde solo esa pregunta · sin ayudas</div>
   </div>
 </section>
 
@@ -157,43 +158,43 @@
   // La primera opción de cada pregunta es la correcta; se mezclan al mostrarlas.
   const SALAS = [
     { t:'El eje y el diagnóstico', q:[
-      ['Mujer de 34 años con hiperpigmentación, PA 80/50, Na 128 y K 5,9 mEq/L. ¿Qué hallazgo apoya una insuficiencia suprarrenal primaria y no secundaria?', ['ACTH alta con cortisol bajo','ACTH baja con cortisol bajo','Cortisol alto con ACTH suprimida','Renina baja con aldosterona alta'], 'En la primaria falla la glándula: el cortisol bajo dispara la ACTH (hiperpigmentación) y falta aldosterona (hiperpotasemia).'],
-      ['Paciente con obesidad central, estrías violáceas e hipertensión. ¿Qué prueba de tamizaje para síndrome de Cushing es adecuada?', ['Supresión nocturna con 1 mg de dexametasona','Estimulación con 250 µg de cosintropina','Cortisol plasmático aleatorio a mediodía','Supresión con 8 mg de prednisona por la noche'], 'Con un eje normal, la dexametasona frena la ACTH y el cortisol de la mañana baja; en el Cushing no baja.'],
-      ['Varón de 60 años con prednisona 20 mg/día desde hace 6 meses la suspende de golpe. ¿Qué perfil hormonal esperan?', ['Cortisol y ACTH bajos, aldosterona conservada','Cortisol bajo y ACTH muy alta con hiperpotasemia','Cortisol y aldosterona bajos con renina suprimida','Cortisol normal: la prednisona no frena el eje'], 'Es una insuficiencia secundaria (terciaria): falta ACTH, pero la aldosterona depende del sistema renina-angiotensina y se conserva.'],
-      ['¿Por qué la insuficiencia suprarrenal por glucocorticoides exógenos no suele requerir fludrocortisona?', ['La aldosterona depende sobre todo de renina-angiotensina','La prednisona tiene más efecto mineralocorticoide que la aldosterona','La zona glomerulosa se atrofia y deja de responder a todo','La fludrocortisona está contraindicada si falta la ACTH'], 'La ACTH regula poco la zona glomerulosa: sin ACTH sigue habiendo aldosterona.'],
-      ['En la prueba de estimulación con cosintropina (ACTH sintética), ¿qué resultado confirma insuficiencia suprarrenal?', ['Cortisol pico bajo tras la estimulación','Cortisol que baja tras dar dexametasona','ACTH alta que se normaliza a los 60 minutos','Cortisol basal alto que no cambia con la prueba'], 'La suprarrenal no responde: el cortisol no supera el punto de corte del laboratorio (habitualmente unos 18 µg/dL).'] ]},
+      ['¿Qué hormona de la hipófisis regula la secreción de cortisol?', ['ACTH','Prolactina','Somatotropina','Tirotropina (TSH)'], 'Eje: CRH (hipotálamo) → ACTH (hipófisis) → cortisol (suprarrenal).'],
+      ['¿A qué hora suele estar más alto el cortisol en la sangre?', ['Al despertar, temprano en la mañana','A medianoche, durante el sueño profundo','A media tarde, después del almuerzo','Al anochecer, antes de dormir'], 'Ritmo circadiano: pico al despertar y mínimo cerca de la medianoche.'],
+      ['Paciente con hiperpigmentación, hipotensión e hiperpotasemia. ¿Qué diagnóstico sugiere?', ['Insuficiencia suprarrenal primaria','Insuficiencia suprarrenal secundaria','Síndrome de Cushing por exceso de ACTH','Hiperaldosteronismo primario'], 'En la primaria (Addison) la ACTH alta pigmenta la piel y la falta de aldosterona sube el potasio.'],
+      ['¿Qué prueba se usa como tamizaje del síndrome de Cushing?', ['Supresión con dexametasona 1 mg','Estimulación con cosintropina IV','Renina y aldosterona plasmáticas','Prueba de tolerancia oral a la glucosa'], 'Con un eje normal, 1 mg de dexametasona en la noche baja el cortisol de la mañana; en el Cushing no baja.'],
+      ['¿Qué prueba confirma una insuficiencia suprarrenal?', ['Estimulación con cosintropina','Supresión con dexametasona','Cortisol urinario libre de 24 horas','Hemoglobina glicosilada'], 'Si el cortisol no sube tras la ACTH sintética (cosintropina), la suprarrenal no responde.'] ]},
     { t:'Elegir el glucocorticoide', q:[
-      ['Embarazada de 28 semanas con crisis asmática que necesita glucocorticoide oral. ¿Cuál limita más la exposición fetal?', ['Prednisolona','Dexametasona','Betametasona','Fludrocortisona'], 'La 11β-HSD2 de la placenta inactiva buena parte de la prednisolona; dexametasona y betametasona la atraviesan (por eso maduran el pulmón fetal).'],
-      ['Embarazada de 30 semanas con amenaza de parto prematuro. ¿Qué esquema acelera la maduración pulmonar fetal?', ['Betametasona 12 mg IM, dos dosis cada 24 h','Prednisona 40 mg VO al día por cinco días','Hidrocortisona 100 mg IV cada 8 h por 2 días','Metilprednisolona 1 g IV en una sola dosis'], 'Betametasona 12 mg IM cada 24 h (2 dosis) o dexametasona 6 mg IM cada 12 h (4 dosis), entre las 24 y 34 semanas.'],
-      ['Paciente con cirrosis descompensada que necesita un glucocorticoide oral. ¿Cuál conviene?', ['Prednisolona, porque ya es la forma activa','Prednisona, porque tiene vida media más larga','Cortisona, porque tiene menor efecto mineralocorticoide','Fludrocortisona, porque no altera la glucemia'], 'La prednisona y la cortisona necesitan la 11β-HSD1 hepática para activarse; la prednisolona ya es activa.'],
-      ['Mujer con enfermedad de Addison recién diagnosticada, estable. ¿Cuál es el esquema de mantenimiento?', ['Hidrocortisona en 2–3 tomas más fludrocortisona','Dexametasona en dosis única nocturna, sin mineralocorticoide','Prednisona en días alternos más espironolactona','Metilprednisolona IM mensual más suplemento de sal'], 'Reemplazo fisiológico: hidrocortisona 15–25 mg/día (la mayor parte en la mañana) y fludrocortisona 0,05–0,2 mg/día.'],
-      ['Paciente con edema cerebral vasogénico por metástasis. ¿Qué glucocorticoide se prefiere y por qué?', ['Dexametasona: potente y sin efecto mineralocorticoide','Hidrocortisona: atraviesa mejor la barrera hematoencefálica','Fludrocortisona: saca el sodio del espacio intersticial','Prednisona oral: vida media más corta y más segura'], 'La dexametasona tiene alta potencia antiinflamatoria, acción larga y casi nula retención de sodio y agua.'] ]},
+      ['¿Cuál tiene el mayor efecto mineralocorticoide?', ['Fludrocortisona','Dexametasona','Betametasona','Metilprednisolona'], 'Por eso se usa para reemplazar la aldosterona en la enfermedad de Addison.'],
+      ['¿Cuál es de acción prolongada (36 a 72 horas)?', ['Dexametasona','Hidrocortisona','Prednisona','Metilprednisolona'], 'Corta: hidrocortisona; intermedia: prednisona y metilprednisolona; prolongada: dexametasona y betametasona.'],
+      ['¿Qué glucocorticoide se usa para madurar el pulmón fetal en la amenaza de parto prematuro?', ['Betametasona','Prednisona','Hidrocortisona','Fludrocortisona'], 'Betametasona (o dexametasona) IM: atraviesan la placenta y aceleran la producción de surfactante.'],
+      ['Paciente con cirrosis que necesita un glucocorticoide oral. ¿Cuál conviene?', ['Prednisolona','Prednisona','Cortisona','Fludrocortisona'], 'La prednisona necesita activarse en el hígado; la prednisolona ya es la forma activa.'],
+      ['¿Qué combinación se usa como mantenimiento en la enfermedad de Addison?', ['Hidrocortisona + fludrocortisona','Dexametasona + espironolactona','Prednisona + furosemida','Metilprednisolona sola en pulsos mensuales'], 'Falta cortisol y aldosterona: hidrocortisona en 2–3 tomas y fludrocortisona una vez al día.'] ]},
     { t:'La balanza', q:[
-      ['Paciente con prednisona 30 mg/día VO que queda en NPO. ¿Qué dosis IV de metilprednisolona es equivalente?', ['24 mg al día','30 mg al día','37,5 mg al día','18 mg al día'], '5 mg de prednisona = 4 mg de metilprednisolona: 30 × 4 ÷ 5 = 24 mg.'],
-      ['¿A cuántos mg de dexametasona equivalen 40 mg de prednisona?', ['6 mg','4 mg','8 mg','10 mg'], '5 mg de prednisona = 0,75 mg de dexametasona: 40 ÷ 5 × 0,75 = 6 mg.'],
-      ['¿A cuántos mg de hidrocortisona equivalen 7,5 mg de prednisona?', ['30 mg','15 mg','37,5 mg','60 mg'], '5 mg de prednisona = 20 mg de hidrocortisona: 7,5 × 4 = 30 mg.'],
-      ['Paciente con dexametasona 4 mg/día. ¿Cuánta prednisona es equivalente?', ['Unos 27 mg','Unos 13 mg','Unos 40 mg','Unos 100 mg'], '0,75 mg de dexametasona = 5 mg de prednisona: 4 ÷ 0,75 × 5 ≈ 26,7 mg.'],
-      ['¿Qué dosis diaria de prednisona se acerca a la producción fisiológica de cortisol de un adulto?', ['Unos 5 mg','Unos 20 mg','Unos 40 mg','Unos 0,5 mg'], 'El adulto produce unos 10–20 mg/día de cortisol, que equivalen a unos 2,5–5 mg de prednisona; más que eso es suprafisiológico.'] ]},
+      ['¿Cuántos mg de prednisona equivalen a 20 mg de hidrocortisona?', ['5 mg','10 mg','20 mg','2,5 mg'], 'La prednisona es 4 veces más potente: 20 ÷ 4 = 5 mg.'],
+      ['¿Cuántos mg de dexametasona equivalen a 5 mg de prednisona?', ['0,75 mg','5 mg','1,5 mg','0,075 mg'], '0,75 mg de dexametasona = 5 mg de prednisona = 20 mg de hidrocortisona.'],
+      ['Paciente con prednisona 20 mg/día. ¿Cuánta metilprednisolona IV es equivalente?', ['16 mg','20 mg','25 mg','12,5 mg'], '5 mg de prednisona = 4 mg de metilprednisolona: 20 × 4 ÷ 5 = 16 mg.'],
+      ['Paciente con prednisona 40 mg/día. ¿Cuánta hidrocortisona es equivalente?', ['160 mg','80 mg','40 mg','1600 mg'], '5 mg de prednisona = 20 mg de hidrocortisona: 40 × 4 = 160 mg.'],
+      ['Paciente con prednisona 10 mg/día. ¿Cuánta dexametasona es equivalente?', ['1,5 mg','10 mg','0,75 mg','3 mg'], '10 mg de prednisona son 2 veces 5 mg: 2 × 0,75 = 1,5 mg de dexametasona.'] ]},
     { t:'Urgencias', q:[
-      ['Mujer con enfermedad de Addison, vómitos, PA 70/40 y Na 124 mEq/L. ¿Cuál es la primera medida farmacológica?', ['Hidrocortisona 100 mg IV en bolo y SSN 0,9 %','Fludrocortisona 0,1 mg VO y dextrosa al 5 %','Dexametasona 0,5 mg VO y restricción de líquidos','Prednisona 60 mg VO y furosemida 20 mg IV'], 'Crisis suprarrenal: hidrocortisona 100 mg IV de inmediato (luego 200 mg/24 h) y cristaloides; a esa dosis cubre también el efecto mineralocorticoide.'],
-      ['Shock séptico que sigue necesitando noradrenalina en dosis crecientes pese a volumen adecuado. ¿Qué glucocorticoide se indica?', ['Hidrocortisona 200 mg/día IV','Dexametasona 0,5 mg/día VO','Metilprednisolona 1 g/día IV','Prednisona 5 mg/día por sonda'], 'Shock séptico con vasopresores: hidrocortisona 200 mg/día (50 mg cada 6 h o en infusión); los pulsos de 1 g no mejoran la evolución.'],
-      ['Paciente hospitalizado con COVID-19 que necesita oxígeno. ¿Qué esquema de glucocorticoide se usa?', ['Dexametasona 6 mg al día hasta por 10 días','Dexametasona 6 mg solo si no requiere oxígeno','Metilprednisolona 1 g al día por tres días','Hidrocortisona 20 mg por la mañana por 10 días'], 'En RECOVERY, dexametasona 6 mg/día bajó la mortalidad en pacientes con oxígeno o ventilación; sin oxígeno no hubo beneficio.'],
-      ['Traumatismo craneoencefálico grave con edema cerebral. ¿Qué se recomienda sobre los glucocorticoides?', ['No usarlos: aumentan la mortalidad','Dexametasona 10 mg IV y luego 4 mg cada 6 h','Metilprednisolona en bolo en las primeras 8 h','Hidrocortisona 100 mg IV cada 8 h por 5 días'], 'El ensayo CRASH mostró más mortalidad con metilprednisolona en el TCE; la dexametasona sirve en el edema de los tumores, no en el TCE.'],
-      ['Adulto con meningitis bacteriana probable por neumococo. ¿Cuándo se da la dexametasona?', ['Con la primera dosis del antibiótico','Solo si el cultivo confirma Listeria','A las 48 h de iniciado el antibiótico','Solo si hay shock séptico refractario'], 'Dexametasona 10 mg IV cada 6 h por 4 días, antes o junto con el antibiótico: reduce secuelas y mortalidad en la meningitis neumocócica.'] ]},
+      ['Crisis suprarrenal con hipotensión y vómitos. ¿Qué se administra primero?', ['Hidrocortisona IV y SSN 0,9 %','Fludrocortisona oral y líquidos orales','Dexametasona oral y dieta con sal','Prednisona oral en dosis alta'], 'Hidrocortisona 100 mg IV de inmediato y suero salino; con vómitos la vía oral no sirve.'],
+      ['Shock séptico que no responde a líquidos y necesita vasopresores. ¿Qué glucocorticoide se usa?', ['Hidrocortisona IV','Dexametasona oral','Fludrocortisona oral','Prednisona oral'], 'Hidrocortisona 200 mg/día IV en el shock séptico que requiere vasopresores.'],
+      ['Paciente con COVID-19 que necesita oxígeno. ¿Qué glucocorticoide demostró bajar la mortalidad?', ['Dexametasona 6 mg al día','Hidrocortisona 20 mg al día','Prednisona 5 mg al día','Budesonida inhalada a demanda'], 'En el ensayo RECOVERY, dexametasona 6 mg/día hasta 10 días bajó la mortalidad en pacientes con oxígeno.'],
+      ['Meningitis bacteriana en un adulto. ¿Cuándo se da la dexametasona?', ['Junto con el primer antibiótico','Al terminar los 10 días de antibiótico','Solo si aparecen convulsiones','Una semana después del alta'], 'Se da antes o junto con la primera dosis de antibiótico: reduce secuelas, sobre todo en la meningitis por neumococo.'],
+      ['Edema cerebral alrededor de un tumor. ¿Qué glucocorticoide se prefiere?', ['Dexametasona','Fludrocortisona','Hidrocortisona','Cortisona'], 'Dexametasona: muy potente, de acción larga y sin retención de sodio y agua.'] ]},
     { t:'El precio', q:[
-      ['Mujer de 65 años que tomará prednisona 10 mg/día por 6 meses por polimialgia reumática. ¿Qué medida protege su hueso?', ['Calcio, vitamina D y evaluar un bisfosfonato','Suspender el calcio porque aumenta la calcinosis','Solo vigilancia con densitometría en 5 años','Dar fludrocortisona para frenar la resorción'], 'Con 2,5 mg/día o más por 3 meses o más: calcio, vitamina D y valorar bisfosfonato según el riesgo de fractura.'],
-      ['Paciente con prednisona 7,5 mg cada mañana: glucemia normal en ayunas pero 260 mg/dL a las 17:00. ¿Qué ajuste es mejor?', ['NPH matutina junto con la prednisona','Glargina nocturna en dosis altas','Gliclazida antes de dormir para la madrugada','Suspender la prednisona sin disminución'], 'La prednisona de la mañana da hiperglucemia de la tarde; la NPH matutina coincide con su pico (la glargina nocturna arriesga hipoglucemia de madrugada).'],
-      ['Paciente con prednisona 30 mg/día por 2 meses: le cuesta levantarse de la silla, sin dolor y con CK normal. ¿Qué sospechan?', ['Miopatía por glucocorticoides','Polimiositis por actividad de la enfermedad','Rabdomiólisis por estatinas','Neuropatía periférica por la prednisona'], 'Debilidad proximal indolora con CK normal: miopatía esteroidea por catabolismo proteico; en la polimiositis la CK suele estar alta.'],
-      ['Paciente que recibirá prednisona de 20 mg/día o más por más de un mes junto con otro inmunosupresor. ¿Qué profilaxis se considera?', ['TMP-SMX contra Pneumocystis jirovecii','Fluconazol diario contra candidiasis invasiva','Aciclovir diario contra citomegalovirus','Isoniazida a todos sin hacer pruebas'], 'Ese nivel de inmunosupresión aumenta el riesgo de neumonía por Pneumocystis; la profilaxis es trimetoprim-sulfametoxazol.'],
-      ['Antes de iniciar prednisona 40 mg/día por varios meses, ¿qué infección latente se debe buscar?', ['Tuberculosis latente (PPD o IGRA)','Toxoplasmosis con IgG anti-toxoplasma','Hepatitis A con IgM anti-VHA','Influenza con hisopado nasal'], 'Los glucocorticoides reactivan la tuberculosis latente; también se tamiza hepatitis B y, en zonas endémicas, Strongyloides.'] ]},
+      ['¿Cuál es un efecto adverso del uso prolongado de glucocorticoides?', ['Osteoporosis','Hipoglucemia','Hiperpotasemia','Aumento de la masa muscular'], 'Frenan la formación de hueso y aumentan su resorción; suben la glucosa y bajan el potasio.'],
+      ['¿Qué pasa con la glucemia al iniciar prednisona en un paciente diabético?', ['Tiende a subir','Tiende a bajar','No cambia','Baja solo en ayunas'], 'Aumentan la gluconeogénesis y la resistencia a la insulina: hay que vigilar y ajustar el tratamiento.'],
+      ['Paciente con prednisona prolongada que tiene debilidad al subir escaleras. ¿Qué sospechan?', ['Miopatía esteroidea','Hipotiroidismo','Neuropatía periférica','Accidente cerebrovascular'], 'El catabolismo proteico debilita los músculos proximales (cadera y hombros).'],
+      ['¿Qué infección latente se debe descartar antes de un tratamiento prolongado con prednisona?', ['Tuberculosis','Toxoplasmosis','Hepatitis A','Influenza estacional'], 'Los glucocorticoides pueden reactivar una tuberculosis latente: PPD o IGRA antes de empezar.'],
+      ['¿Qué medida protege el hueso de un paciente que tomará prednisona por varios meses?', ['Calcio y vitamina D','Restringir el calcio','Dar fludrocortisona','Suspender la actividad física'], 'Calcio y vitamina D para todos, y valorar un bisfosfonato según el riesgo de fractura.'] ]},
     { t:'Retiro, estrés e interacciones', q:[
-      ['Paciente con prednisona 5 mg/día desde hace un año va a una colecistectomía programada. ¿Qué cobertura se recomienda?', ['Hidrocortisona IV perioperatoria por 24 h','Suspender la prednisona 3 días antes de operar','Duplicar la prednisona por 2 semanas después','Solo fludrocortisona IV durante la anestesia'], 'Cirugía con estrés moderado en un eje posiblemente suprimido: hidrocortisona IV en la inducción y en las primeras 24 h, luego volver a su dosis.'],
-      ['Paciente con Addison estable con hidrocortisona 20 mg/día tiene gripe con fiebre de 38,8 °C, sin vómitos. ¿Qué le indican?', ['Duplicar la dosis mientras dure la fiebre','Mantener la dosis y añadir solo paracetamol','Suspender la fludrocortisona hasta que mejore','Cambiar a dexametasona 0,5 mg en una toma'], 'Reglas de los días de enfermedad: con fiebre se duplica (o triplica) la hidrocortisona; con vómitos, vía parenteral y acudir a urgencias.'],
-      ['Paciente que recibió prednisona 40 mg/día por 10 días por una exacerbación de asma. ¿Qué se hace al terminar?', ['Puede suspenderse sin disminución gradual','Bajar 5 mg por semana durante dos meses','Hacer prueba de cosintropina antes de suspender','Pasar a hidrocortisona de por vida'], 'Los cursos de menos de unas 3 semanas rara vez suprimen el eje de forma relevante; se suspenden sin pauta descendente.'],
-      ['Paciente con Addison que empieza rifampicina por tuberculosis. ¿Qué ajuste se hace?', ['Aumentar la hidrocortisona por inducción del CYP3A4','Reducir la hidrocortisona porque la rifampicina la potencia','Suspender la fludrocortisona por riesgo de hipopotasemia','No hay interacción relevante entre ambos'], 'La rifampicina induce el CYP3A4 y acelera el metabolismo del cortisol: hay que subir la dosis para no caer en crisis.'],
-      ['Paciente con VIH que recibe ritonavir y usa un corticoide inhalado; aparecen cara de luna llena y estrías. ¿Cuál es la explicación?', ['El ritonavir inhibe el CYP3A4 y sube el corticoide','El inhalador libera más fármaco por un defecto técnico','El ritonavir estimula la secreción de ACTH hipofisaria','Es un efecto propio del VIH sin relación con fármacos'], 'Al inhibir el CYP3A4 se acumula el corticoide inhalado (fluticasona, budesonida): Cushing iatrógeno y supresión del eje.'] ]}
+      ['Paciente con prednisona 20 mg/día desde hace 6 meses. ¿Cómo se suspende?', ['Bajando la dosis en forma gradual','De golpe, el mismo día','Cambiando de inmediato a fludrocortisona','Duplicando la dosis una semana antes'], 'Tras meses de tratamiento el eje está suprimido: el retiro gradual le da tiempo de recuperarse.'],
+      ['¿Por qué no se suspende de golpe la prednisona tras meses de uso?', ['Riesgo de insuficiencia suprarrenal aguda','Produce hipercortisolismo de rebote','Causa hipoglucemia grave inmediata','Provoca hiperpotasemia por exceso de aldosterona'], 'La suprarrenal está atrofiada por falta de ACTH y no puede producir cortisol de inmediato.'],
+      ['Paciente con Addison que tiene fiebre de 39 °C. ¿Qué se hace con la hidrocortisona?', ['Duplicar la dosis','Suspenderla','Mantener igual','Cambiarla por dexametasona'], 'Regla de los días de enfermedad: con fiebre se duplica (o triplica) la dosis mientras dure.'],
+      ['Paciente con prednisona crónica que va a una cirugía mayor. ¿Qué necesita?', ['Hidrocortisona en dosis de estrés','Suspender la prednisona 3 días antes de operar','Solo fludrocortisona','Ningún cambio en la dosis'], 'Su eje no responde al estrés de la cirugía: se cubre con hidrocortisona IV.'],
+      ['Paciente con Addison que empieza rifampicina. ¿Qué pasa con la hidrocortisona?', ['Se metaboliza más rápido: hay que subirla','Se acumula: hay que bajarla','No hay interacción','Se inactiva en el intestino: pasar a la vía IV'], 'La rifampicina induce el CYP3A4 y acelera el metabolismo del cortisol: se sube la dosis.'] ]}
   ];
-  const PIN='1711', KEY='escape-corti-med10-v1', TRIES=2;
+  const PIN='1711', KEY='escape-corti-med10-v3', TRIES=2;
   const L=['A','B','C','D'];
   const $=id=>document.getElementById(id);
   const mmss=s=>{s=Math.max(0,Math.round(s));const m=Math.floor(s/60),x=s%60;return (m<10?'0':'')+m+':'+(x<10?'0':'')+x;};
@@ -237,7 +238,7 @@
       const locks=st.res[g].map(r=>r===null?'🔒':(r.ok?'🔓':'❌')).join('');
       const d=document.createElement('div'); d.className='tile'+(g===c?' now':'');
       if(st.out[g]) d.style.opacity='.55';
-      d.innerHTML='<div class="g">G'+(g+1)+'</div><div class="locks">'+locks+'</div><div class="tt">'+fmtN(nota(g))+' / 20</div><div class="an">'+(st.out[g]?'<span style="color:var(--bad);font-weight:700">FUERA</span>':'⏱ <span data-bank="'+g+'">'+mmss(Math.max(0,bankNow(g)))+'</span>')+'</div>';
+      d.innerHTML='<div class="g">G'+(g+1)+'</div><div class="locks">'+locks+'</div><div class="tt">'+fmtN(nota(g))+' / 20</div><div class="an">'+(st.out[g]?'<span style="color:var(--bad);font-weight:700">SIN TIEMPO</span>':'⏱ <span data-bank="'+g+'">'+mmss(Math.max(0,bankNow(g)))+'</span>')+'</div>';
       b.appendChild(d);
     }
   }
@@ -279,7 +280,7 @@
       if(st.phase==='result'){
         $('expl').className='expl'+(r&&r.ok?'':' bad');
         const msg = r&&r.ok ? '<b>🔓 Candado abierto</b> (+'+fmtN(PTS)+' puntos, en '+mmss(r.t)+'). '
-                  : (st.why==='time' ? '<b>⏱ Se acabó el tiempo de G'+(g+1)+': queda fuera.</b> ' : '<b>❌ Dos intentos fallidos: G'+(g+1)+' queda fuera.</b> ');
+                  : (st.why==='time' ? '<b>⏱ Se acabó el tiempo de G'+(g+1)+': ya no puede responder.</b> ' : '<b>❌ Dos intentos fallidos: se pierde esta pregunta. G'+(g+1)+' sigue en juego.</b> ');
         $('expl').innerHTML=msg+Q[2];
       } else if(showExpl){
         $('expl').className='expl bad';
@@ -298,14 +299,14 @@
     $('bNextSala').classList.toggle('hidden',fin);
     const rows=[...Array(st.nG).keys()].map(g=>({g,n:nota(g),ok:groupOk(g),t:groupTime(g),left:Math.max(0,st.bank[g]),out:st.out[g]})).sort((a,b)=>b.n-a.n||a.t-b.t);
     let h='<tr><th>Puesto</th><th>Equipo</th><th>Candados</th><th>Nota / 20</th><th>Tiempo usado</th><th>Le queda</th><th>Estado</th></tr>';
-    rows.forEach((r,i)=>{const c=i===0?'pod1':i===1?'pod2':i===2?'pod3':'';h+='<tr class="'+c+'"><td class="n">'+(i+1)+'.º</td><td class="disp">G'+(r.g+1)+'</td><td class="n">'+r.ok+' de '+SALAS.length+'</td><td class="n"><b>'+fmtN(r.n)+'</b></td><td class="n">'+mmss(r.t)+'</td><td class="n">'+mmss(r.left)+'</td><td>'+(r.out?'<span style="color:var(--bad)">Fuera</span>':(fin&&r.ok===SALAS.length?'<span style="color:var(--ok)">Escapó</span>':'En juego'))+'</td></tr>';});
+    rows.forEach((r,i)=>{const c=i===0?'pod1':i===1?'pod2':i===2?'pod3':'';h+='<tr class="'+c+'"><td class="n">'+(i+1)+'.º</td><td class="disp">G'+(r.g+1)+'</td><td class="n">'+r.ok+' de '+SALAS.length+'</td><td class="n"><b>'+fmtN(r.n)+'</b></td><td class="n">'+mmss(r.t)+'</td><td class="n">'+mmss(r.left)+'</td><td>'+(r.out?'<span style="color:var(--bad)">Sin tiempo</span>':(fin&&r.ok===SALAS.length?'<span style="color:var(--ok)">Escapó</span>':(fin?'Terminó':'En juego')))+'</td></tr>';});
     $('rankTbl').innerHTML=h;
   }
 
   function finishTurn(ok,why){
     const g=cur(); commit();
     st.res[g][st.sala]={ok, t: st.qStart - st.bank[g]};
-    if(!ok) st.out[g]=true;
+    if(!ok && why==='time') st.out[g]=true;
     st.why=why||''; st.phase='result'; save(); render();
   }
   function answer(oi){
