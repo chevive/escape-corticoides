@@ -3,410 +3,349 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Escape room · Laboratorio en cuarentena</title>
+<title>Escape room · Laboratorio en cuarentena (proyector)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#0d1117; --panel:#161b22; --panel2:#1f2630; --line:#2d3643;
-    --text:#e6edf3; --muted:#9aa7b4; --accent:#3ddc97; --accent2:#2bb67c;
-    --alarm:#ff4d4f; --warn:#ffb020; --radius:14px;
-  }
+  :root{--bg:#0d1117;--panel:#161b22;--panel2:#1f2630;--line:#2d3643;--text:#e6edf3;--muted:#9aa7b4;--ok:#3ddc97;--bad:#ff4d4f;--warn:#ffb020;--blue:#58a6ff}
   *{box-sizing:border-box}
-  html,body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:16px;line-height:1.5}
-  body{min-height:100vh}
-  .stripes{height:8px;background:repeating-linear-gradient(45deg,var(--warn) 0 14px,#111 14px 28px)}
-  .wrap{max-width:720px;margin:0 auto;padding:16px 16px 48px}
-  h1,h2,h3,.disp{font-family:"Chakra Petch",Inter,sans-serif;letter-spacing:.02em;margin:0}
-  h1{font-size:1.7rem;line-height:1.2}
-  h2{font-size:1.35rem}
-  p{margin:.5rem 0}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}
+  body{display:flex;flex-direction:column;min-height:100vh}
+  .stripes{height:10px;flex:none;background:repeating-linear-gradient(45deg,var(--warn) 0 16px,#111 16px 32px)}
+  .disp{font-family:"Chakra Petch",Inter,sans-serif;letter-spacing:.02em}
   .muted{color:var(--muted)}
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-top:14px}
-  .badge{display:inline-block;font-family:"Chakra Petch";font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--warn);border:1px solid var(--warn);border-radius:999px;padding:2px 10px}
-  .btn{appearance:none;border:0;border-radius:12px;padding:14px 18px;font:600 1rem Inter,sans-serif;cursor:pointer;background:var(--accent);color:#06281a;width:100%}
-  .btn:active{transform:translateY(1px)}
+  button{font-family:inherit}
+  .btn{appearance:none;border:0;border-radius:12px;padding:12px 20px;font:600 1.05rem Inter,sans-serif;cursor:pointer;background:var(--ok);color:#06281a}
   .btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
   .btn.warn{background:var(--warn);color:#2b1a00}
-  .btn:disabled{opacity:.45;cursor:not-allowed}
-  .grid6{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
-  .grp{padding:18px 0;font-family:"Chakra Petch";font-size:1.4rem;background:var(--panel2);color:var(--text);border:2px solid var(--line);border-radius:12px;cursor:pointer}
-  .grp.sel{border-color:var(--accent);color:var(--accent);box-shadow:0 0 0 3px rgba(61,220,151,.15)}
-  ul.rules{padding-left:1.1rem;margin:.5rem 0}
-  ul.rules li{margin:.3rem 0}
-  /* header */
-  .hud{position:sticky;top:0;z-index:5;background:rgba(13,17,23,.92);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
-  .hud .wrap{padding:10px 16px;display:flex;gap:10px;align-items:center;justify-content:space-between}
-  .hud .grpTag{font-family:"Chakra Petch";font-size:1.1rem;color:var(--accent)}
-  .hud .clock{font-family:"Chakra Petch";font-size:1.3rem;font-variant-numeric:tabular-nums}
-  .hud .anti{font-size:.9rem;color:var(--muted)}
-  .dots{display:flex;gap:6px;margin:14px 0 4px}
-  .dot{flex:1;height:8px;border-radius:4px;background:var(--panel2);border:1px solid var(--line)}
-  .dot.done{background:var(--accent);border-color:var(--accent)}
-  .dot.now{background:var(--warn);border-color:var(--warn)}
-  .q{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:10px}
-  .q b.l{font-family:"Chakra Petch";color:var(--warn);margin-right:6px}
-  .opts{display:grid;gap:6px;margin-top:8px}
-  .opt{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.03)}
-  .opt .n{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:700 .85rem "Chakra Petch";background:var(--line);color:var(--text)}
-  .codebox{display:flex;gap:10px;margin-top:16px}
-  .codebox input{flex:1;min-width:0;font:700 1.6rem "Chakra Petch";letter-spacing:.25em;text-align:center;text-transform:uppercase;padding:12px;border-radius:12px;border:2px solid var(--line);background:#0a0e13;color:var(--text)}
-  .codebox input:focus{outline:none;border-color:var(--accent)}
-  .codebox .btn{width:auto;padding:0 22px}
-  .fmt{font-size:.85rem;color:var(--muted);margin-top:6px;text-align:center}
-  .hintbox{margin-top:14px;padding:12px 14px;border-radius:12px;border:1px dashed var(--warn);color:#ffe2a8;background:rgba(255,176,32,.08)}
-  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-  /* overlays */
-  .ov{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(5,8,12,.88)}
-  .ov.on{display:flex}
-  .ovcard{max-width:440px;width:100%;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;text-align:center}
-  .ov.q0 .ovcard{border-color:var(--alarm);box-shadow:0 0 60px rgba(255,77,79,.35)}
-  .ov.ok .ovcard{border-color:var(--accent);box-shadow:0 0 60px rgba(61,220,151,.35)}
-  .big{font:700 3.4rem "Chakra Petch";font-variant-numeric:tabular-nums;margin:.3rem 0}
-  .alarm{color:var(--alarm)} .okc{color:var(--accent)}
-  .pulse{animation:pulse 1s infinite}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .badge{display:inline-block;font:700 .85rem "Chakra Petch";letter-spacing:.1em;text-transform:uppercase;color:var(--warn);border:1px solid var(--warn);border-radius:999px;padding:3px 12px}
+  /* layout */
+  .top{flex:none;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 28px;border-bottom:1px solid var(--line)}
+  .top .t1{font:700 1.5rem "Chakra Petch"}
+  .top .t2{color:var(--muted);font-size:1rem}
+  .main{flex:1;display:flex;gap:24px;padding:20px 28px;min-height:0}
+  .left{flex:1;display:flex;flex-direction:column;min-width:0}
+  .right{width:300px;flex:none;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .turn{font:700 1.4rem "Chakra Petch";color:var(--warn)}
+  .qtext{font-size:clamp(1.5rem,2.6vw,2.4rem);font-weight:600;line-height:1.3;margin:10px 0 18px}
+  .opts{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .opt{display:flex;flex-direction:row;justify-content:flex-start;align-items:center;gap:14px;text-align:left;width:100%;padding:16px 18px;border-radius:14px;border:2px solid var(--line);background:var(--panel);color:var(--text);font-size:clamp(1.1rem,1.8vw,1.6rem);cursor:pointer;min-height:84px}
+  .opt .L{flex:none;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;font:700 1.3rem "Chakra Petch";background:var(--line)}
+  .opt.gone{opacity:.15;pointer-events:none}
+  .opt.right{border-color:var(--ok);background:rgba(61,220,151,.15)}
+  .opt.right .L{background:var(--ok);color:#06281a}
+  .opt.wrong{border-color:var(--bad);background:rgba(255,77,79,.15)}
+  .opt.wrong .L{background:var(--bad)}
+  .expl{margin-top:16px;padding:14px 18px;border-radius:14px;background:var(--panel2);border-left:6px solid var(--ok);font-size:clamp(1rem,1.5vw,1.3rem)}
+  .expl.bad{border-left-color:var(--bad)}
+  .timer{font:700 6.5rem "Chakra Petch";line-height:1;font-variant-numeric:tabular-nums}
+  .timer.low{color:var(--bad);animation:pulse 1s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
-  .shake{animation:shake .4s}
-  @keyframes shake{20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
-  table.sum{width:100%;border-collapse:collapse;margin-top:10px;font-size:.95rem}
-  table.sum td{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left}
-  table.sum td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-family:"Chakra Petch"}
-  .foot{margin-top:28px;text-align:center;font-size:.8rem;color:var(--muted)}
+  .ctl{display:flex;flex-direction:column;gap:10px;width:100%}
+  .ctl .btn{width:100%}
+  /* board */
+  .board{flex:none;display:grid;grid-template-columns:repeat(6,1fr);gap:12px;padding:12px 28px 18px;border-top:1px solid var(--line)}
+  .tile{background:var(--panel);border:2px solid var(--line);border-radius:14px;padding:10px 12px;text-align:center}
+  .tile.now{border-color:var(--warn);box-shadow:0 0 24px rgba(255,176,32,.35)}
+  .tile .g{font:700 1.5rem "Chakra Petch"}
+  .tile .locks{font-size:1.15rem;letter-spacing:2px;margin:4px 0;min-height:1.5em}
+  .tile .tt{font:700 1.2rem "Chakra Petch";font-variant-numeric:tabular-nums}
+  .tile .an{font-size:.8rem;color:var(--muted)}
+  /* screens */
+  .center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}
+  .center h1{font:700 clamp(2.4rem,5vw,4.2rem) "Chakra Petch";margin:14px 0 8px}
+  .center p{font-size:1.3rem;max-width:900px;line-height:1.5}
+  .rules{font-size:1.15rem;text-align:left;max-width:900px;line-height:1.6}
+  .setup{display:flex;gap:18px;align-items:center;justify-content:center;margin:18px 0;flex-wrap:wrap;font-size:1.1rem}
+  .setup input{width:80px;font:700 1.2rem "Chakra Petch";text-align:center;padding:8px;border-radius:10px;border:1px solid var(--line);background:#0a0e13;color:var(--text)}
+  table.rank{border-collapse:collapse;font-size:1.4rem;margin-top:18px;min-width:620px}
+  table.rank th,table.rank td{padding:10px 18px;border-bottom:1px solid var(--line)}
+  table.rank th{color:var(--muted);font-weight:600;font-size:1rem;text-transform:uppercase;letter-spacing:.06em}
+  table.rank td.n{font-family:"Chakra Petch";font-variant-numeric:tabular-nums}
+  .pod1{color:#ffd54a}.pod2{color:#cfd8e3}.pod3{color:#e3a26f}
+  .foot{position:fixed;right:12px;bottom:8px;font-size:.75rem;color:var(--muted)}
   .foot a{color:var(--muted)}
-  input.pin{width:100%;font:600 1.2rem Inter;padding:10px;border-radius:10px;border:1px solid var(--line);background:#0a0e13;color:var(--text);text-align:center;margin:10px 0}
-  /* projector */
-  .proj{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px}
-  .proj .count{font:700 clamp(5rem,18vw,13rem) "Chakra Petch";font-variant-numeric:tabular-nums;line-height:1}
-  .proj .ctl{display:flex;gap:12px;margin-top:24px;flex-wrap:wrap;justify-content:center}
-  .proj .ctl .btn{width:auto;min-width:150px}
   .hidden{display:none!important}
+  .ov{position:fixed;inset:0;background:rgba(5,8,12,.85);display:none;align-items:center;justify-content:center;z-index:20}
+  .ov.on{display:flex}
+  .ovc{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px;max-width:460px;width:90%;text-align:center}
+  .ovc input{width:100%;font:600 1.2rem Inter;padding:10px;border-radius:10px;border:1px solid var(--line);background:#0a0e13;color:var(--text);text-align:center;margin:12px 0}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 </style>
 </head>
 <body>
 <div class="stripes"></div>
 
-<!-- HUD -->
-<div class="hud hidden" id="hud"><div class="wrap">
-  <span class="grpTag" id="hudGrp">G1</span>
-  <span style="text-align:center;line-height:1.15"><span class="clock" id="hudClock">75:00</span><br><span class="anti" id="hudRoom">Sala 10:00</span></span>
-  <span class="anti" id="hudAnti">Antídotos: 2</span>
-</div></div>
-
-<!-- START -->
-<main class="wrap" id="vStart">
-  <span class="badge">Alerta biológica · Nivel 3</span>
-  <h1 style="margin-top:10px">Laboratorio en cuarentena</h1>
+<!-- INICIO -->
+<section class="center" id="vSetup">
+  <span class="badge">Alerta biológica · BioCorti S.A.</span>
+  <h1>Laboratorio en cuarentena</h1>
   <p class="muted">Farmacología · Biotecnología · Corticoides (Katzung, cap. 39)</p>
-  <div class="panel">
-    <p>En la planta de <b>BioCorti S.A.</b> se contaminó un lote de glucocorticoides y el sistema de seguridad cerró todas las puertas. Para salir, su laboratorio debe abrir <b>7 salas</b> con lo que sabe de los corticoides.</p>
-    <ul class="rules">
-      <li>Cada laboratorio tiene <b>75 minutos</b> en su celular, desde que entra. Cada sala tiene <b>10 minutos</b> sugeridos.</li>
-      <li>Cada sala se abre con un código que sale del capítulo.</li>
-      <li>Código equivocado: <b>1 minuto de cuarentena</b> sin poder intentar.</li>
-      <li>Tienen <b>2 antídotos</b> (pistas). Cada uno <b>suma 2 minutos</b> a su tiempo.</li>
-      <li>Pueden usar el libro, sus apuntes y las diapositivas; internet no.</li>
-      <li>Gana el laboratorio con el <b>menor tiempo oficial</b> (tiempo real + antídotos).</li>
+  <div class="rules">
+    <p>Un lote de glucocorticoides se contaminó y las puertas se cerraron. Cada laboratorio tiene <b>6 candados</b>, uno por sala.</p>
+    <ul>
+      <li>En cada sala, cada grupo recibe <b>su propia pregunta</b> en su turno.</li>
+      <li>Responden en voz alta dentro del tiempo. <b>Acierto</b>: abren su candado y suman el tiempo que tardaron.</li>
+      <li><b>Error o tiempo agotado</b>: el candado queda cerrado y suman el tiempo completo más 30 s de penalización.</li>
+      <li>Cada laboratorio tiene <b>2 antídotos 50/50</b>: eliminan dos opciones y suman 15 s.</li>
+      <li>Gana el laboratorio con <b>menor tiempo total</b>. No se puede ayudar a otro grupo.</li>
     </ul>
   </div>
-  <div class="panel">
-    <h2>¿Qué laboratorio son?</h2>
-    <div class="grid6" id="grpGrid"></div>
-    <button class="btn" id="btnStart" style="margin-top:16px" disabled>Entrar al laboratorio</button>
+  <div class="setup">
+    <label>Grupos <input id="inG" type="number" min="2" max="6" value="6"></label>
+    <label>Segundos por pregunta <input id="inT" type="number" min="20" max="180" value="60"></label>
   </div>
-  <div class="foot"><a href="#proyector">Modo proyector (docente)</a></div>
-</main>
+  <button class="btn" id="btnGo" style="font-size:1.3rem;padding:16px 40px">Activar la alarma</button>
+</section>
 
-<!-- ROOM -->
-<main class="wrap hidden" id="vRoom">
-  <div class="dots" id="dots"></div>
-  <p class="muted" id="roomNum" style="margin-top:8px">Sala 1 de 7</p>
-  <h1 id="roomTitle">La fábrica</h1>
-  <div class="panel" id="roomBody"></div>
-  <form id="codeForm" autocomplete="off">
-    <div class="codebox">
-      <input id="codeIn" inputmode="text" autocapitalize="characters" spellcheck="false" placeholder="código" aria-label="Código de la sala">
-      <button class="btn" type="submit">Abrir</button>
+<!-- JUEGO -->
+<header class="top hidden" id="vTop">
+  <div><div class="t1" id="salaTitle">Sala 1 · La fábrica y el reloj</div><div class="t2" id="salaSub">Pregunta 1 de 6</div></div>
+  <span class="badge">Laboratorio en cuarentena</span>
+</header>
+<section class="main hidden" id="vMain">
+  <div class="left">
+    <div class="turn" id="turnLbl">Turno de G1</div>
+    <div id="readyBox" class="center" style="padding:10px">
+      <p style="font-size:1.6rem">Laboratorio <b id="readyG">G1</b>, prepárense.</p>
+      <p class="muted">El docente muestra la pregunta y empieza a correr el tiempo.</p>
     </div>
-    <div class="fmt" id="codeFmt">3 dígitos</div>
-  </form>
-  <div class="hintbox hidden" id="hintBox"></div>
-  <div class="row2">
-    <button class="btn warn" id="btnAnti">Usar antídoto</button>
-    <button class="btn ghost" id="btnRules">Reglas</button>
+    <div id="qBox" class="hidden">
+      <div class="qtext" id="qText"></div>
+      <div class="opts" id="opts"></div>
+      <div class="expl hidden" id="expl"></div>
+    </div>
   </div>
-  <div class="foot"><a href="#" id="lnkReset">Reiniciar (solo docente)</a></div>
-</main>
-
-<!-- END -->
-<main class="wrap hidden" id="vEnd">
-  <span class="badge" id="endBadge" style="color:var(--accent);border-color:var(--accent)">Cuarentena levantada</span>
-  <h1 style="margin-top:10px" class="okc" id="endTitle">¡Escaparon!</h1>
-  <p id="endMsg">Muestren esta pantalla al docente.</p>
-  <div class="panel" style="text-align:center">
-    <div class="muted" id="endGrp">Laboratorio G1</div>
-    <div class="muted" style="margin-top:6px">Tiempo oficial</div>
-    <div class="big okc" id="endTime">00:00</div>
-    <div class="muted" id="endAnti">Tiempo real 00:00 + antídotos 0 × 2 min</div>
-    <table class="sum" id="endTable"></table>
+  <div class="right">
+    <div class="muted">Tiempo</div>
+    <div class="timer" id="timer">60</div>
+    <div class="ctl">
+      <button class="btn" id="bShow">Mostrar pregunta</button>
+      <button class="btn warn hidden" id="b5050">Antídoto 50/50 (+15 s)</button>
+      <button class="btn ghost hidden" id="bPause">Pausar</button>
+      <button class="btn ghost hidden" id="bTimeout">Se acabó el tiempo</button>
+      <button class="btn hidden" id="bNext">Siguiente turno</button>
+    </div>
+    <div class="muted" style="font-size:.85rem;text-align:center">El docente toca la opción que dice el grupo.<br>Teclas: A–D responder · Espacio pausar · Enter seguir</div>
   </div>
-  <div class="panel">
-    <p><b>Lo que sigue:</b> cada laboratorio explicará una sala en la desactivación y luego viene el pase de salida individual.</p>
+</section>
+
+<!-- FIN DE SALA / FINAL -->
+<section class="center hidden" id="vBetween">
+  <span class="badge" id="betBadge">Sala superada</span>
+  <h1 id="betTitle">Fin de la sala 1</h1>
+  <p class="muted" id="betSub">Así va el marcador.</p>
+  <table class="rank" id="rankTbl"></table>
+  <div style="display:flex;gap:12px;margin-top:22px">
+    <button class="btn" id="bNextSala">Siguiente sala</button>
   </div>
-  <div class="foot"><a href="#" id="lnkReset2">Reiniciar (solo docente)</a></div>
-</main>
+</section>
 
-<!-- PROJECTOR -->
-<div class="proj hidden" id="vProj">
-  <span class="badge">Alerta biológica · BioCorti S.A.</span>
-  <h1 style="margin:12px 0 4px;font-size:clamp(1.8rem,5vw,3.2rem)">Laboratorio en cuarentena</h1>
-  <p class="muted" style="font-size:1.1rem">Tiempo para levantar la cuarentena</p>
-  <div class="count" id="projCount">75:00</div>
-  <div class="ctl">
-    <button class="btn" id="pStart">Iniciar</button>
-    <button class="btn ghost" id="pPause">Pausar</button>
-    <button class="btn ghost" id="pReset">Reiniciar</button>
-  </div>
-  <p class="muted" style="margin-top:28px;max-width:720px">7 salas · código equivocado = 1 minuto de cuarentena · 2 antídotos por laboratorio (+2 min cada uno) · gana el menor tiempo oficial · se puede usar el libro, los apuntes y las diapositivas</p>
-  <p style="margin-top:18px"><a href="#" id="pBack" style="color:var(--muted)">Volver al juego</a></p>
-</div>
+<footer class="board hidden" id="board"></footer>
 
-<!-- OVERLAYS -->
-<div class="ov q0" id="ovQ"><div class="ovcard">
-  <div class="disp alarm pulse" style="font-size:1.2rem">☣ CUARENTENA</div>
-  <div class="big alarm" id="ovQTime">60</div>
-  <p>Código incorrecto. Revisen la sala y el capítulo mientras corre el tiempo.</p>
-</div></div>
+<div class="foot"><a href="#" id="lnkReset">Reiniciar juego</a> · <a href="celular.html">versión para celular</a></div>
 
-<div class="ov ok" id="ovOk"><div class="ovcard">
-  <div class="disp okc" style="font-size:1.2rem">🔓 SALA DESBLOQUEADA</div>
-  <div class="big okc" id="ovOkNum">1/7</div>
-  <p id="ovOkMsg">Siguiente sala en camino…</p>
-</div></div>
-
-<div class="ov" id="ovAnti"><div class="ovcard">
-  <h2>¿Usar un antídoto?</h2>
-  <p class="muted">Les queda <span id="antiLeft">2</span>. Cada antídoto suma 2 minutos a su tiempo oficial.</p>
-  <div class="row2"><button class="btn ghost" id="antiNo">No</button><button class="btn warn" id="antiYes">Sí, usar</button></div>
-</div></div>
-
-<div class="ov" id="ovRules"><div class="ovcard" style="text-align:left">
-  <h2>Reglas</h2>
-  <ul class="rules">
-    <li>Tienen 75 minutos en total; cada sala tiene 10 minutos sugeridos.</li>
-    <li>Escriban el código y toquen <b>Abrir</b>.</li>
-    <li>Código equivocado: 1 minuto de cuarentena.</li>
-    <li>2 antídotos por laboratorio; cada uno suma 2 minutos a su tiempo.</li>
-    <li>Gana el menor tiempo oficial: tiempo real + antídotos.</li>
-    <li>En cada sala presenta el código un integrante distinto: el docente puede preguntarle por qué.</li>
-    <li>Libro, apuntes y diapositivas, sí; internet, no.</li>
-  </ul>
-  <button class="btn" id="rulesOk">Entendido</button>
-</div></div>
-
-<div class="ov" id="ovReset"><div class="ovcard">
-  <h2>Reiniciar este celular</h2>
-  <p class="muted">Solo el docente. Se borra el avance de este dispositivo.</p>
-  <input class="pin" id="pinIn" placeholder="Clave del docente" inputmode="numeric">
-  <div class="row2"><button class="btn ghost" id="resetNo">Cancelar</button><button class="btn warn" id="resetYes">Reiniciar</button></div>
+<div class="ov" id="ovReset"><div class="ovc">
+  <h2 class="disp" style="margin:0">¿Reiniciar el juego?</h2>
+  <p class="muted">Se borra el marcador. Escriba la clave del docente.</p>
+  <input id="pinIn" placeholder="Clave" inputmode="numeric">
+  <div class="row2"><button class="btn ghost" id="rNo">Cancelar</button><button class="btn warn" id="rYes">Reiniciar</button></div>
 </div></div>
 
 <script>
 (function(){
-  // ---------- contenido ----------
-  const O = (arr)=>'<div class="opts">'+arr.map((t,i)=>'<div class="opt"><span class="n">'+(i+1)+'</span><span>'+t+'</span></div>').join('')+'</div>';
-  const Q = (l,txt,opts)=>'<div class="q"><b class="l">'+l+'.</b>'+txt+(opts?O(opts):'')+'</div>';
-  const ROOMS = [
-    { t:'La fábrica', h:213746026, fmt:'3 dígitos: el número de la respuesta de A, B y C', len:3,
-      b:'<p>La puerta de la planta de síntesis pide un código de 3 dígitos.</p>'+
-        Q('A','¿Qué zona de la corteza suprarrenal produce sobre todo cortisol?',['glomerulosa','reticular','fasciculada','médula'])+
-        Q('B','¿De qué molécula parten todas las hormonas esteroideas?',['tirosina','ácido araquidónico','triptófano','colesterol'])+
-        Q('C','¿Qué regula sobre todo la secreción de aldosterona?',['la angiotensina II y el potasio','solo la ACTH','la TSH','la CRH']),
-      hint:'De afuera hacia adentro: sal, azúcar y sexo.' },
-    { t:'El reloj', h:1825086408, fmt:'3 dígitos: A, B y C', len:3,
-      b:'<p>El reloj de la planta se detuvo. Para ponerlo en marcha hay que saber cómo funciona el eje.</p>'+
-        Q('A','¿Cuándo está más alto el cortisol en la sangre?',['a medianoche','al mediodía','temprano en la mañana','a las 18:00'])+
-        Q('B','¿Cuál es el orden del eje?',['ACTH → CRH → cortisol','CRH → ACTH → cortisol','cortisol → ACTH → CRH','TRH → TSH → cortisol'])+
-        Q('C','¿Cómo viaja el cortisol en la sangre?',['casi todo libre','unido a la TBG','dentro de los glóbulos rojos','la mayor parte unido a la transcortina (CBG) y a la albúmina']),
-      hint:'El cortisol es el que te despierta.' },
-    { t:'La llave y el núcleo', h:3924931403, fmt:'5 letras en el orden correcto', len:5,
-      b:'<p>La cámara genética se abre si ordenan los pasos de la acción del cortisol en la célula.</p>'+
-        Q('A','El complejo hormona-receptor entra al núcleo.')+
-        Q('B','El cortisol atraviesa la membrana celular, porque es liposoluble.')+
-        Q('C','El complejo se une a los elementos de respuesta a glucocorticoides (GRE) del ADN y cambia la transcripción.')+
-        Q('D','El cortisol se une a su receptor en el citoplasma, y el receptor suelta las proteínas de choque térmico (hsp90).')+
-        Q('E','Se fabrican (o dejan de fabricarse) proteínas y aparece el efecto, horas después.'),
-      hint:'Primero tiene que entrar a la célula; lo último es lo que tarda horas.' },
-    { t:'La balanza', h:4224889149, fmt:'6 cifras: A, luego B y luego C, sin espacios', len:6,
-      b:'<p>La balanza de dosificación solo se equilibra con la dosis exacta. Un paciente que toma <b>40 mg/día de prednisona</b> por boca ya no puede tragar y hay que pasarlo a otro glucocorticoide con la misma potencia antiinflamatoria. Usen el cuadro de potencias del cap. 39.</p>'+
-        Q('A','¿Cuántos mg/día de metilprednisolona?')+
-        Q('B','¿Cuántos mg/día de dexametasona?')+
-        Q('C','¿Cuántos mg/día de hidrocortisona?'),
-      hint:'40 mg de prednisona son 8 veces 5 mg.' },
-    { t:'Las enzimas', h:1100703834, fmt:'3 dígitos: A, B y C', len:3,
-      b:'<p>El laboratorio de metabolismo pide un código de 3 dígitos.</p>'+
-        Q('A','La prednisona es un profármaco. ¿Qué enzima del hígado la convierte en prednisolona?',['11β-HSD tipo 1','11β-HSD tipo 2','CYP3A4','aromatasa'])+
-        Q('B','Un paciente con hepatopatía grave necesita un glucocorticoide por boca. ¿Cuál conviene?',['prednisona','cortisona','prednisolona','cualquiera, es igual'])+
-        Q('C','En el riñón, la 11β-HSD tipo 2 convierte el cortisol en cortisona. ¿Para qué?',['para activar el cortisol','para que el cortisol no ocupe el receptor de mineralocorticoides','para eliminarlo por la bilis','para fabricar aldosterona']),
-      hint:'Predniso-NA necesita al hígado para volverse predniso-LONA.' },
-    { t:'El precio', h:444847446, fmt:'3 dígitos: A, B y C', len:3,
-      b:'<p>En la enfermería de la planta está don Jorge, de 62 años, que toma <b>30 mg/día de prednisona desde hace 4 meses</b> por una enfermedad inflamatoria.</p>'+
-        Q('A','¿Cuántos de estos son efectos adversos de los glucocorticoides en uso prolongado? Hiperglucemia · osteoporosis · miopatía proximal · cataratas · hipoglucemia · más infecciones · hiperpotasemia · redistribución de la grasa (cara de luna llena). El dígito es el número de efectos verdaderos.')+
-        Q('B','Don Jorge quiere dejar la prednisona de golpe. ¿Qué puede pasar?',['nada, su suprarrenal funciona normal','una insuficiencia suprarrenal aguda, porque el eje está suprimido','un hipercortisolismo de rebote','una hiperpotasemia'])+
-        Q('C','Don Jorge va a una cirugía mayor. ¿Qué se hace con el glucocorticoide?',['suspenderlo el día de la cirugía','mantener la misma dosis','dar una dosis de estrés, más alta, durante la cirugía','cambiarlo por fludrocortisona sola']),
-      hint:'La glucosa sube y el potasio baja.' },
-    { t:'La salida', h:1292478870, fmt:'5 dígitos: A, B, C, D y E', len:5,
-      b:'<p>La puerta final se abre con 5 dígitos. Los primeros 4 salen de unir cada fármaco con lo que hace; el último, de la pregunta E.</p>'+
-        '<div class="q"><b class="l">Acciones</b>'+O(['bloquea el receptor de mineralocorticoides','inhibe la 11β-hidroxilasa, el último paso de la síntesis del cortisol','antagonista del receptor de glucocorticoides (y de progesterona)','antifúngico que inhibe varias enzimas CYP de la síntesis de esteroides'])+'</div>'+
-        Q('A','Metirapona')+Q('B','Mifepristona')+Q('C','Espironolactona')+Q('D','Ketoconazol')+
-        Q('E','Prueba de supresión con dexametasona: si el cortisol de la mañana no baja después de 1 mg de dexametasona en la noche, se sospecha…',['insuficiencia suprarrenal','síndrome de Cushing','hipotiroidismo','nada, es normal']),
-      hint:'La espironolactona también se usa como diurético ahorrador de potasio.' }
+  // La primera opción de cada pregunta es la correcta; se mezclan al mostrarlas.
+  const SALAS = [
+    { t:'La fábrica y el reloj', q:[
+      ['¿Qué zona de la corteza suprarrenal produce sobre todo cortisol?', ['Fasciculada','Glomerulosa','Reticular','Médula'], 'La fasciculada hace glucocorticoides; la glomerulosa, aldosterona; la reticular, andrógenos.'],
+      ['¿Qué zona de la corteza suprarrenal produce aldosterona?', ['Glomerulosa','Fasciculada','Reticular','Médula'], 'De afuera hacia adentro: sal (glomerulosa), azúcar (fasciculada), sexo (reticular).'],
+      ['¿De qué molécula derivan todas las hormonas esteroideas?', ['Colesterol','Tirosina','Triptófano','Ácido araquidónico'], 'Todos los esteroides suprarrenales salen del colesterol.'],
+      ['¿Qué hormona de la hipófisis estimula la secreción de cortisol?', ['ACTH','TSH','GH','Prolactina'], 'Eje: CRH (hipotálamo) → ACTH (hipófisis) → cortisol (suprarrenal).'],
+      ['¿A qué hora del día el cortisol en la sangre es más alto?', ['Temprano en la mañana','A medianoche','A media tarde','Después de cenar'], 'Pico al despertar y mínimo cerca de la medianoche (ritmo circadiano).'],
+      ['¿Cómo circula la mayor parte del cortisol en la sangre?', ['Unido a la transcortina (CBG) y a la albúmina','Libre en el plasma','Unido a la TBG','Dentro de los glóbulos rojos'], 'Casi todo va unido a proteínas; solo la fracción libre actúa.'] ]},
+    { t:'La llave y el núcleo', q:[
+      ['¿Dónde está el receptor de glucocorticoides antes de unirse a la hormona?', ['En el citoplasma, unido a las proteínas hsp90','En la membrana plasmática','En la mitocondria','En el retículo endoplásmico'], 'Es un receptor intracelular; las hsp90 lo mantienen inactivo.'],
+      ['¿Por qué el cortisol entra a la célula sin un transportador especial?', ['Porque es liposoluble','Porque es una proteína','Porque usa canales de calcio','Porque se une a la insulina'], 'Los esteroides atraviesan la membrana lipídica por difusión.'],
+      ['¿Qué hace el receptor cuando se une el cortisol?', ['Suelta las hsp90 y el complejo pasa al núcleo','Se degrada de inmediato','Abre un canal iónico','Activa la adenilato ciclasa'], 'Hormona + receptor → se liberan las hsp90 → núcleo → ADN.'],
+      ['¿A qué secuencias del ADN se une el complejo hormona-receptor?', ['A los elementos de respuesta a glucocorticoides (GRE)','A los telómeros','A los intrones','Al ADN mitocondrial'], 'Al unirse a los GRE cambia la transcripción de genes.'],
+      ['¿Por qué la mayoría de los efectos de los glucocorticoides tardan horas?', ['Porque dependen de fabricar nuevas proteínas','Porque se absorben muy lento','Porque se eliminan muy rápido','Porque primero se activan en el riñón'], 'Actúan cambiando la transcripción: el efecto llega cuando cambian las proteínas.'],
+      ['¿Cómo frenan los glucocorticoides los genes de la inflamación (transrepresión)?', ['Interfieren con factores de transcripción como NF-κB y AP-1','Activan el NF-κB','Bloquean receptores H1','Destruyen el ARN mensajero'], 'La transrepresión explica gran parte del efecto antiinflamatorio.'] ]},
+    { t:'Los efectos', q:[
+      ['¿Qué hacen los glucocorticoides con la glucosa en sangre?', ['La suben (más gluconeogénesis)','La bajan','No la cambian','Solo la bajan en ayunas'], 'Son hiperglucemiantes: estimulan la gluconeogénesis y frenan el uso periférico de glucosa.'],
+      ['¿Qué pasa con los linfocitos en la sangre al dar un glucocorticoide?', ['Disminuyen','Aumentan','No cambian','Se vuelven blastos'], 'Bajan linfocitos, eosinófilos, monocitos y basófilos.'],
+      ['¿Qué pasa con los neutrófilos en la sangre al dar un glucocorticoide?', ['Aumentan','Disminuyen','Desaparecen','No cambian'], 'Suben los neutrófilos circulantes: no confundir con infección.'],
+      ['¿Cómo reducen la síntesis de prostaglandinas?', ['Inhiben la fosfolipasa A2 y la expresión de la COX-2','Acetilan la COX-1 como la aspirina','Bloquean receptores de histamina','Inhiben la xantina oxidasa'], 'Menos ácido araquidónico disponible y menos COX-2 inducible.'],
+      ['Con dosis altas y prolongadas, ¿qué pasa con la grasa corporal?', ['Se redistribuye a cara, nuca y tronco','Se pierde de forma pareja','Se acumula solo en las piernas','No cambia'], 'Cara de luna llena, giba dorsal y obesidad central: Cushing.'],
+      ['¿Qué efecto tienen sobre las proteínas del músculo?', ['Catabólico: degradan proteína','Anabólico: aumentan la masa muscular','Ninguno','Hipertrofia cardíaca'], 'El catabolismo proteico explica la miopatía y la piel delgada.'] ]},
+    { t:'La balanza y las enzimas', q:[
+      ['¿Cuántos mg de prednisona equivalen a 20 mg de hidrocortisona?', ['5 mg','1 mg','10 mg','20 mg'], 'Prednisona es 4 veces más potente: 5 mg = 20 mg de hidrocortisona.'],
+      ['¿Cuántos mg de dexametasona equivalen a 5 mg de prednisona?', ['0,75 mg','2 mg','4 mg','10 mg'], '0,75 mg de dexametasona = 5 mg de prednisona = 20 mg de hidrocortisona.'],
+      ['¿Cuál tiene el mayor efecto mineralocorticoide?', ['Fludrocortisona','Dexametasona','Prednisona','Betametasona'], 'Por eso se usa en la enfermedad de Addison para reemplazar la aldosterona.'],
+      ['¿Cuál es de acción larga (36 a 72 h)?', ['Dexametasona','Hidrocortisona','Prednisona','Cortisona'], 'Corta: hidrocortisona; intermedia: prednisona; larga: dexametasona y betametasona.'],
+      ['¿Qué enzima del hígado convierte la prednisona en prednisolona?', ['11β-HSD tipo 1','11β-HSD tipo 2','Aromatasa','5α-reductasa'], 'La prednisona es profármaco; en hepatopatía grave conviene dar prednisolona.'],
+      ['¿Para qué sirve la 11β-HSD tipo 2 del riñón?', ['Inactiva el cortisol a cortisona para proteger el receptor de mineralocorticoides','Activa el cortisol','Fabrica aldosterona','Elimina la prednisona por la orina'], 'Así el receptor de mineralocorticoides queda para la aldosterona.'] ]},
+    { t:'El precio', q:[
+      ['¿Cuál NO es un efecto adverso del uso prolongado de glucocorticoides?', ['Hipoglucemia','Osteoporosis','Hiperglucemia','Cataratas'], 'Suben la glucosa; osteoporosis y cataratas sí son efectos adversos.'],
+      ['Un paciente con prednisona por meses no puede subir escaleras. ¿Qué sospechan?', ['Miopatía proximal por esteroides','Neuropatía periférica','Hipotiroidismo','Accidente cerebrovascular'], 'El catabolismo proteico debilita los músculos proximales.'],
+      ['Con dosis altas de hidrocortisona, ¿qué electrolito tiende a bajar?', ['Potasio','Sodio','Calcio','Cloro'], 'Su efecto mineralocorticoide retiene sodio y elimina potasio.'],
+      ['Tras 3 meses de prednisona 20 mg/día, ¿por qué no se suspende de golpe?', ['El eje está suprimido: riesgo de insuficiencia suprarrenal aguda','Da hipercortisolismo de rebote','Produce convulsiones','Daña el hígado'], 'El retiro debe ser gradual para que el eje se recupere.'],
+      ['Un paciente con prednisona crónica va a una cirugía mayor. ¿Qué se hace?', ['Dar una dosis de estrés, más alta','Suspender la prednisona','Mantener la misma dosis','Cambiarla por fludrocortisona sola'], 'Su suprarrenal no responde al estrés: hay que cubrirlo.'],
+      ['¿Qué riesgo infeccioso aumenta con glucocorticoides prolongados?', ['Infecciones, incluida la reactivación de tuberculosis','Ninguno','Solo resfriados leves','Solo hongos en las uñas'], 'La inmunosupresión aumenta las infecciones y reactiva infecciones latentes.'] ]},
+    { t:'La salida', q:[
+      ['En la enfermedad de Addison, ¿qué se usa como reemplazo?', ['Hidrocortisona + fludrocortisona','Dexametasona sola','Prednisona + espironolactona','Metirapona'], 'Falta cortisol y aldosterona: se reemplazan los dos.'],
+      ['¿Qué inhibe la metirapona?', ['La 11β-hidroxilasa, último paso de la síntesis del cortisol','El receptor de glucocorticoides','El receptor de mineralocorticoides','La aromatasa'], 'Baja el cortisol; se usa en diagnóstico y en el Cushing.'],
+      ['¿Qué es la mifepristona?', ['Un antagonista del receptor de glucocorticoides (y de progesterona)','Un inhibidor de la síntesis de colesterol','Un agonista mineralocorticoide','Un análogo de la ACTH'], 'Bloquea el receptor: no baja el cortisol, impide que actúe.'],
+      ['¿Qué hacen la espironolactona y la eplerenona?', ['Bloquean el receptor de mineralocorticoides','Inhiben la 11β-hidroxilasa','Son glucocorticoides','Estimulan la secreción de ACTH'], 'Antagonistas de la aldosterona.'],
+      ['Si el cortisol no baja tras 1 mg de dexametasona en la noche, ¿qué se sospecha?', ['Síndrome de Cushing','Enfermedad de Addison','Hipotiroidismo','Nada, es normal'], 'En una persona sana la dexametasona frena el eje y el cortisol baja.'],
+      ['En la amenaza de parto prematuro se da betametasona o dexametasona a la madre. ¿Para qué?', ['Para madurar el pulmón fetal','Para detener las contracciones','Para bajar la presión','Para evitar infecciones'], 'Aceleran la producción de surfactante en el pulmón del feto.'] ]}
   ];
-  const QUAR = 60, PEN = 120, LIMIT = 75*60, ROOM_LIM = 10*60, PIN = '1711', KEY = 'escape-corti-v1';
+  const PIN='1711', KEY='escape-corti-proj-v2', PEN_FAIL=30, PEN_ANTI=15;
+  const L=['A','B','C','D'];
+  const $=id=>document.getElementById(id);
+  const mmss=s=>{s=Math.max(0,Math.round(s));const m=Math.floor(s/60),x=s%60;return (m<10?'0':'')+m+':'+(x<10?'0':'')+x;};
 
-  // ---------- estado ----------
-  let mem = null;
-  function load(){ try{ const s = localStorage.getItem(KEY); return s?JSON.parse(s):null; }catch(e){ return mem; } }
-  function save(st){ mem = st; try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} }
-  function clearSt(){ mem = null; try{ localStorage.removeItem(KEY); }catch(e){} }
-  let st = load();
+  // mezcla determinista
+  function rng(seed){return function(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;};}
+  function order(s,k){const r=rng(1000*s+k+7);const a=[0,1,2,3];for(let i=3;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
-  function fnv(s){ let h = 0x811c9dc5; const b = new TextEncoder().encode(s); for(const x of b){ h ^= x; h = Math.imul(h, 0x01000193) >>> 0; } return h >>> 0; }
-  const norm = s => (s||'').toUpperCase().replace(/[^0-9A-Z]/g,'');
-  const $ = id => document.getElementById(id);
-  const mmss = sec => { sec = Math.max(0, Math.floor(sec)); const m = Math.floor(sec/60), s = sec%60; return (m<10?'0':'')+m+':'+(s<10?'0':'')+s; };
+  let mem=null;
+  const load=()=>{try{const v=localStorage.getItem(KEY);return v?JSON.parse(v):null;}catch(e){return mem;}};
+  const save=()=>{mem=st;try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}};
+  let st=load();
 
-  // ---------- inicio ----------
-  let chosen = null;
-  const grid = $('grpGrid');
-  for(let g=1; g<=6; g++){
-    const b = document.createElement('button'); b.className='grp'; b.textContent='G'+g;
-    b.onclick = ()=>{ chosen = g; [...grid.children].forEach(c=>c.classList.remove('sel')); b.classList.add('sel'); $('btnStart').disabled=false; };
-    grid.appendChild(b);
+  function newGame(nG,T){
+    st={nG,T,sala:0,turn:0,phase:'ready',res:[],anti:Array(nG).fill(0),left:T,runFrom:null,picked:null,hid:[]};
+    for(let g=0;g<nG;g++) st.res.push(Array(SALAS.length).fill(null));
+    save();
   }
-  $('btnStart').onclick = ()=>{
-    if(!chosen) return;
-    st = { g:chosen, start:Date.now(), room:0, times:[], anti:[], qUntil:0, end:null };
-    save(st); render();
-  };
+  // en la sala s, el turno k le toca al grupo (s+k) % nG; el grupo usa la pregunta k (si hay menos de 6 grupos, sobran preguntas)
+  const groupOf=(s,k)=>(s+k)%st.nG;
+  const groupTotal=g=>st.res[g].reduce((a,r)=>a+(r?r.t:0),0)+st.anti[g]*PEN_ANTI;
+  const groupOk=g=>st.res[g].filter(r=>r&&r.ok).length;
+  const remaining=()=>st.runFrom? st.left-(Date.now()-st.runFrom)/1000 : st.left;
 
-  // ---------- render ----------
-  function show(id){ ['vStart','vRoom','vEnd','vProj'].forEach(v=>$(v).classList.toggle('hidden', v!==id)); $('hud').classList.toggle('hidden', !(id==='vRoom')); }
+  function show(ids){['vSetup','vTop','vMain','vBetween','board'].forEach(v=>$(v).classList.toggle('hidden',!ids.includes(v)));}
+
+  function renderBoard(){
+    const b=$('board'); b.innerHTML='';
+    b.style.gridTemplateColumns='repeat('+st.nG+',1fr)';
+    const cur=(st.phase==='ready'||st.phase==='ask'||st.phase==='result')?groupOf(st.sala,st.turn):-1;
+    for(let g=0;g<st.nG;g++){
+      const locks=st.res[g].map(r=>r===null?'🔒':(r.ok?'🔓':'❌')).join('');
+      const d=document.createElement('div'); d.className='tile'+(g===cur?' now':'');
+      d.innerHTML='<div class="g">G'+(g+1)+'</div><div class="locks">'+locks+'</div><div class="tt">'+mmss(groupTotal(g))+'</div><div class="an">Antídotos: '+(2-st.anti[g])+'</div>';
+      b.appendChild(d);
+    }
+  }
+
   function render(){
-    if(location.hash==='#proyector'){ show('vProj'); return; }
-    if(!st){ show('vStart'); return; }
-    if(st.room>=ROOMS.length || st.timeout){ renderEnd(); return; }
-    show('vRoom');
-    const r = ROOMS[st.room];
-    $('hudGrp').textContent = 'G'+st.g;
-    $('hudAnti').textContent = 'Antídotos: '+(2-st.anti.length)+(st.anti.length? ' · +'+(st.anti.length*2)+' min' : '');
-    $('roomNum').textContent = 'Sala '+(st.room+1)+' de '+ROOMS.length;
-    $('roomTitle').textContent = r.t;
-    $('roomBody').innerHTML = r.b;
-    $('codeFmt').textContent = r.fmt;
-    $('codeIn').value=''; $('codeIn').maxLength = r.len+4;
-    const dots = $('dots'); dots.innerHTML='';
-    ROOMS.forEach((_,i)=>{ const d=document.createElement('div'); d.className='dot'+(i<st.room?' done':i===st.room?' now':''); dots.appendChild(d); });
-    const used = st.anti.includes(st.room);
-    $('hintBox').classList.toggle('hidden', !used);
-    if(used) $('hintBox').innerHTML = '<b>Antídoto:</b> '+r.hint;
-    $('btnAnti').disabled = used || st.anti.length>=2;
-    $('btnAnti').textContent = used ? 'Antídoto usado en esta sala' : (st.anti.length>=2 ? 'Sin antídotos' : 'Usar antídoto');
-    tick();
-  }
-  function renderEnd(){
-    show('vEnd');
-    const total = (st.end - st.start)/1000, pen = st.anti.length*PEN, off = Math.min(LIMIT, total + pen);
-    const tout = !!st.timeout;
-    $('endBadge').textContent = tout ? 'Tiempo agotado' : 'Cuarentena levantada';
-    $('endBadge').style.color = $('endBadge').style.borderColor = tout ? 'var(--alarm)' : 'var(--accent)';
-    $('endTitle').textContent = tout ? 'Se acabó el tiempo' : '¡Escaparon!';
-    $('endTitle').className = tout ? 'alarm' : 'okc';
-    $('endTime').className = 'big ' + (tout ? 'alarm' : 'okc');
-    $('endMsg').textContent = tout ? ('Abrieron '+st.room+' de '+ROOMS.length+' salas. Muestren esta pantalla al docente.') : 'Muestren esta pantalla al docente.';
-    $('endGrp').textContent = 'Laboratorio G'+st.g;
-    $('endTime').textContent = mmss(off);
-    $('endAnti').textContent = 'Tiempo real '+mmss(total)+' + antídotos '+st.anti.length+' × 2 min';
-    let prev = st.start, rows='';
-    st.times.forEach((t,i)=>{ rows += '<tr><td>Sala '+(i+1)+' · '+ROOMS[i].t+'</td><td>'+mmss((t-prev)/1000)+'</td></tr>'; prev=t; });
-    rows += '<tr><td>Tiempo real</td><td>'+mmss(total)+'</td></tr>';
-    rows += '<tr><td>Penalización por antídotos</td><td>+'+mmss(pen)+'</td></tr>';
-    rows += '<tr><td><b>Tiempo oficial</b></td><td><b>'+mmss(off)+'</b></td></tr>';
-    $('endTable').innerHTML = rows;
+    if(!st){show(['vSetup']);return;}
+    if(st.phase==='between'||st.phase==='final'){renderBetween();return;}
+    show(['vTop','vMain','board']);
+    const s=st.sala, k=st.turn, g=groupOf(s,k), Q=SALAS[s].q[k];
+    $('salaTitle').textContent='Sala '+(s+1)+' de '+SALAS.length+' · '+SALAS[s].t;
+    $('salaSub').textContent='Turno '+(k+1)+' de '+st.nG;
+    $('turnLbl').textContent='Turno de G'+(g+1);
+    $('readyG').textContent='G'+(g+1);
+    const ready=st.phase==='ready';
+    $('readyBox').classList.toggle('hidden',!ready);
+    $('qBox').classList.toggle('hidden',ready);
+    $('bShow').classList.toggle('hidden',!ready);
+    $('b5050').classList.toggle('hidden',st.phase!=='ask');
+    $('b5050').disabled = st.anti[g]>=2 || st.hid.length>0;
+    $('bPause').classList.toggle('hidden',st.phase!=='ask');
+    $('bPause').textContent = st.runFrom ? 'Pausar' : 'Seguir';
+    $('bTimeout').classList.toggle('hidden',st.phase!=='ask');
+    $('bNext').classList.toggle('hidden',st.phase!=='result');
+    $('bNext').textContent = (k+1>=st.nG) ? (s+1>=SALAS.length ? 'Ver resultado final' : 'Fin de la sala') : 'Siguiente turno';
+    if(!ready){
+      $('qText').textContent=Q[0];
+      const ord=order(s,k), box=$('opts'); box.innerHTML='';
+      ord.forEach((oi,pos)=>{
+        const bt=document.createElement('button'); bt.className='opt';
+        bt.innerHTML='<span class="L">'+L[pos]+'</span><span>'+Q[1][oi]+'</span>';
+        if(st.hid.includes(oi)) bt.classList.add('gone');
+        if(st.phase==='result'){ if(oi===0) bt.classList.add('right'); else if(st.picked===oi) bt.classList.add('wrong'); bt.disabled=true; }
+        else bt.onclick=()=>answer(oi);
+        box.appendChild(bt);
+      });
+      const r=st.res[g][s];
+      $('expl').classList.toggle('hidden',st.phase!=='result');
+      if(st.phase==='result'){
+        $('expl').className='expl'+(r&&r.ok?'':' bad');
+        $('expl').innerHTML=(r&&r.ok?'<b>🔓 Candado abierto</b> en '+mmss(r.t)+'. ':'<b>❌ Candado cerrado</b> (+'+(st.T+PEN_FAIL)+' s). ')+Q[2];
+      }
+    }
+    renderBoard(); tick();
   }
 
-  // ---------- código ----------
-  $('codeForm').addEventListener('submit', e=>{
-    e.preventDefault();
-    if(!st || st.room>=ROOMS.length || st.timeout) return;
-    if(Date.now() < st.qUntil){ quarantine(); return; }
-    const c = norm($('codeIn').value);
-    if(!c) return;
-    if(fnv('corti|'+st.room+'|'+c) === ROOMS[st.room].h){
-      st.times.push(Date.now()); st.room++;
-      if(st.room>=ROOMS.length) st.end = Date.now();
-      save(st);
-      $('ovOkNum').textContent = st.room+'/'+ROOMS.length;
-      $('ovOkMsg').textContent = st.room>=ROOMS.length ? '¡La última puerta se abrió!' : 'Siguiente sala en camino…';
-      $('ovOk').classList.add('on');
-      setTimeout(()=>{ $('ovOk').classList.remove('on'); render(); window.scrollTo(0,0); }, 1600);
-    } else {
-      st.qUntil = Date.now() + QUAR*1000; save(st);
-      $('codeIn').classList.add('shake'); setTimeout(()=>$('codeIn').classList.remove('shake'),400);
-      quarantine();
-    }
+  function renderBetween(){
+    show(['vBetween']);
+    const fin=st.phase==='final';
+    $('betBadge').textContent= fin ? 'Cuarentena levantada' : 'Sala terminada';
+    $('betTitle').textContent= fin ? 'Resultado final' : 'Fin de la sala '+(st.sala+1)+' · '+SALAS[st.sala].t;
+    $('betSub').textContent= fin ? 'Gana el menor tiempo total.' : 'Así va el marcador (menor tiempo total va primero).';
+    $('bNextSala').classList.toggle('hidden',fin);
+    const rows=[...Array(st.nG).keys()].map(g=>({g,t:groupTotal(g),ok:groupOk(g),a:st.anti[g]})).sort((a,b)=>a.t-b.t||b.ok-a.ok);
+    let h='<tr><th>Puesto</th><th>Laboratorio</th><th>Candados abiertos</th><th>Antídotos</th><th>Tiempo total</th></tr>';
+    rows.forEach((r,i)=>{const c=i===0?'pod1':i===1?'pod2':i===2?'pod3':'';h+='<tr class="'+c+'"><td class="n">'+(i+1)+'.º</td><td class="disp">G'+(r.g+1)+'</td><td class="n">'+r.ok+' de '+SALAS.length+'</td><td class="n">'+r.a+'</td><td class="n">'+mmss(r.t)+'</td></tr>';});
+    $('rankTbl').innerHTML=h;
+    renderBoard();
+  }
+
+  function answer(oi){
+    if(st.phase!=='ask') return;
+    const g=groupOf(st.sala,st.turn), used=st.T-remaining(), ok=oi===0;
+    st.res[g][st.sala]={ok, t: ok? used : st.T+PEN_FAIL};
+    st.picked=oi; st.phase='result'; st.runFrom=null; save(); render();
+  }
+  function timeout(){
+    if(st.phase!=='ask') return;
+    const g=groupOf(st.sala,st.turn);
+    st.res[g][st.sala]={ok:false,t:st.T+PEN_FAIL};
+    st.picked=null; st.phase='result'; st.runFrom=null; st.left=0; save(); render();
+  }
+  function next(){
+    if(st.phase!=='result') return;
+    st.turn++; st.hid=[]; st.picked=null; st.left=st.T; st.runFrom=null;
+    if(st.turn>=st.nG){ st.phase = (st.sala+1>=SALAS.length) ? 'final' : 'between'; }
+    else st.phase='ready';
+    save(); render();
+  }
+
+  $('btnGo').onclick=()=>{const nG=Math.min(6,Math.max(2,parseInt($('inG').value)||6));const T=Math.min(180,Math.max(20,parseInt($('inT').value)||60));newGame(nG,T);render();};
+  $('bShow').onclick=()=>{st.phase='ask';st.left=st.T;st.runFrom=Date.now();save();render();};
+  $('bPause').onclick=()=>{ if(st.runFrom){st.left=remaining();st.runFrom=null;} else st.runFrom=Date.now(); save(); render(); };
+  $('bTimeout').onclick=timeout;
+  $('bNext').onclick=next;
+  $('b5050').onclick=()=>{
+    const g=groupOf(st.sala,st.turn); if(st.anti[g]>=2||st.hid.length) return;
+    const wrong=[1,2,3]; const r=rng(77+st.sala*10+st.turn); const keep=wrong[Math.floor(r()*3)];
+    st.hid=wrong.filter(x=>x!==keep); st.anti[g]++; save(); render();
+  };
+  $('bNextSala').onclick=()=>{st.sala++;st.turn=0;st.phase='ready';st.left=st.T;st.runFrom=null;st.hid=[];save();render();};
+
+  document.addEventListener('keydown',e=>{
+    if(!st||document.activeElement.tagName==='INPUT') return;
+    const k=e.key.toUpperCase();
+    if(st.phase==='ask' && L.includes(k)){ const oi=order(st.sala,st.turn)[L.indexOf(k)]; if(!st.hid.includes(oi)) answer(oi); }
+    else if(e.key===' ' && st.phase==='ask'){ e.preventDefault(); $('bPause').click(); }
+    else if(e.key==='Enter'){ if(st.phase==='ready') $('bShow').click(); else if(st.phase==='result') next(); else if(st.phase==='between') $('bNextSala').click(); }
   });
-  function quarantine(){ $('ovQ').classList.add('on'); tick(); }
 
-  // ---------- antídotos ----------
-  $('btnAnti').onclick = ()=>{ $('antiLeft').textContent = 2-st.anti.length; $('ovAnti').classList.add('on'); };
-  $('antiNo').onclick = ()=> $('ovAnti').classList.remove('on');
-  $('antiYes').onclick = ()=>{ if(st.anti.length<2 && !st.anti.includes(st.room)){ st.anti.push(st.room); save(st); } $('ovAnti').classList.remove('on'); render(); };
-  $('btnRules').onclick = ()=> $('ovRules').classList.add('on');
-  $('rulesOk').onclick = ()=> $('ovRules').classList.remove('on');
+  $('lnkReset').onclick=e=>{e.preventDefault();$('pinIn').value='';$('ovReset').classList.add('on');};
+  $('rNo').onclick=()=>$('ovReset').classList.remove('on');
+  $('rYes').onclick=()=>{ if($('pinIn').value.trim()===PIN){ st=null; mem=null; try{localStorage.removeItem(KEY);}catch(e){} $('ovReset').classList.remove('on'); render(); } };
 
-  // ---------- reinicio ----------
-  function askReset(e){ e.preventDefault(); $('pinIn').value=''; $('ovReset').classList.add('on'); }
-  $('lnkReset').onclick = askReset; $('lnkReset2').onclick = askReset;
-  $('resetNo').onclick = ()=> $('ovReset').classList.remove('on');
-  $('resetYes').onclick = ()=>{ if($('pinIn').value.trim()===PIN){ clearSt(); st=null; chosen=null; [...grid.children].forEach(c=>c.classList.remove('sel')); $('btnStart').disabled=true; $('ovReset').classList.remove('on'); render(); } else { $('pinIn').classList.add('shake'); setTimeout(()=>$('pinIn').classList.remove('shake'),400); } };
-
-  // ---------- reloj ----------
   function tick(){
-    if(st && st.room<ROOMS.length && !st.timeout){
-      const used = (Date.now()-st.start)/1000 + st.anti.length*PEN;
-      const rem = LIMIT - used;
-      if(rem <= 0){ st.timeout = true; st.end = Date.now(); save(st); $('ovQ').classList.remove('on'); render(); return; }
-      $('hudClock').textContent = mmss(Math.ceil(rem));
-      $('hudClock').classList.toggle('alarm', rem <= 300);
-      const rStart = st.times.length ? st.times[st.times.length-1] : st.start;
-      const rRem = ROOM_LIM - (Date.now()-rStart)/1000;
-      $('hudRoom').textContent = rRem > 0 ? 'Sala '+mmss(Math.ceil(rRem)) : 'Sala +'+mmss(-rRem);
-      $('hudRoom').classList.toggle('alarm', rRem <= 0);
-      const left = Math.ceil((st.qUntil - Date.now())/1000);
-      if(left>0){ $('ovQ').classList.add('on'); $('ovQTime').textContent = left; }
-      else $('ovQ').classList.remove('on');
-    }
-    projTick();
+    if(!st||st.phase!=='ask'){ if(st&&st.phase==='ready') {$('timer').textContent=st.T;$('timer').classList.remove('low');} if(st&&st.phase==='result'){$('timer').classList.remove('low');} return; }
+    const r=remaining();
+    $('timer').textContent=Math.max(0,Math.ceil(r));
+    $('timer').classList.toggle('low',r<=10);
+    if(r<=0) timeout();
   }
-  setInterval(tick, 500);
-
-  // ---------- proyector ----------
-  const PKEY = 'escape-corti-proj', TOTAL = 75*60;
-  let pj = (()=>{ try{ return JSON.parse(localStorage.getItem(PKEY)) || {left:TOTAL, runFrom:null}; }catch(e){ return {left:TOTAL, runFrom:null}; } })();
-  function psave(){ try{ localStorage.setItem(PKEY, JSON.stringify(pj)); }catch(e){} }
-  function pleft(){ return pj.runFrom ? pj.left - (Date.now()-pj.runFrom)/1000 : pj.left; }
-  function projTick(){
-    if(location.hash!=='#proyector') return;
-    const l = pleft(); const el = $('projCount');
-    el.textContent = l<=0 ? '00:00' : mmss(Math.ceil(l));
-    el.classList.toggle('alarm', l<=300); el.classList.toggle('pulse', l<=60);
-  }
-  $('pStart').onclick = ()=>{ if(!pj.runFrom){ pj.runFrom = Date.now(); psave(); } };
-  $('pPause').onclick = ()=>{ if(pj.runFrom){ pj.left = pleft(); pj.runFrom = null; psave(); } };
-  $('pReset').onclick = ()=>{ pj = {left:TOTAL, runFrom:null}; psave(); projTick(); };
-  $('pBack').onclick = e=>{ e.preventDefault(); location.hash=''; render(); };
-
-  window.addEventListener('hashchange', render);
+  setInterval(tick,250);
   render();
 })();
 </script>
