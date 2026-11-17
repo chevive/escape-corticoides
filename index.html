@@ -39,7 +39,7 @@
   .opt.wrong .L{background:var(--bad)}
   .expl{margin-top:16px;padding:14px 18px;border-radius:14px;background:var(--panel2);border-left:6px solid var(--ok);font-size:clamp(1rem,1.5vw,1.3rem)}
   .expl.bad{border-left-color:var(--bad)}
-  .timer{font:700 6.5rem "Chakra Petch";line-height:1;font-variant-numeric:tabular-nums}
+  .timer{font:700 5.2rem "Chakra Petch";line-height:1;font-variant-numeric:tabular-nums}
   .timer.low{color:var(--bad);animation:pulse 1s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
   .ctl{display:flex;flex-direction:column;gap:10px;width:100%}
@@ -85,16 +85,16 @@
   <div class="rules">
     <p>Un lote de glucocorticoides se contaminó y las puertas se cerraron. Cada laboratorio tiene <b>6 candados</b>, uno por sala, y la nota es sobre 20.</p>
     <ul>
-      <li>En cada sala, cada grupo recibe <b>su propia pregunta</b> en su turno, con tiempo en pantalla.</li>
-      <li>Tienen <b>2 intentos</b>. Si aciertan, abren su candado y ganan <b>3,33 puntos</b>.</li>
-      <li>Si fallan los 2 intentos (o se les acaba el tiempo dos veces), <b>quedan fuera</b> del juego y conservan los puntos que ya tenían.</li>
+      <li>Cada laboratorio tiene <b>15 minutos en total</b>. Su reloj corre solo en su turno, como en el ajedrez.</li>
+      <li>En cada sala, cada grupo recibe <b>su propia pregunta</b> en su turno.</li>
+      <li>Tienen <b>2 intentos</b> por pregunta. Si aciertan, abren su candado y ganan <b>3,33 puntos</b>.</li>
+      <li>Si fallan los 2 intentos o se les acaba su tiempo, <b>quedan fuera</b> y conservan los puntos que ya tenían.</li>
       <li>Abrir los 6 candados = <b>20/20</b>. No hay ayudas y no se puede ayudar a otro grupo.</li>
-      <li>Empate en la nota: gana el grupo que tardó menos.</li>
     </ul>
   </div>
   <div class="setup">
     <label>Grupos <input id="inG" type="number" min="2" max="6" value="6"></label>
-    <label>Segundos por pregunta <input id="inT" type="number" min="20" max="180" value="60"></label>
+    <label>Minutos por grupo <input id="inT" type="number" min="3" max="60" value="15"></label>
   </div>
   <button class="btn" id="btnGo" style="font-size:1.3rem;padding:16px 40px">Activar la alarma</button>
 </section>
@@ -119,15 +119,14 @@
     </div>
   </div>
   <div class="right">
-    <div class="muted">Tiempo</div>
-    <div class="timer" id="timer">60</div>
+    <div class="muted" id="timerLbl">Tiempo de G1</div>
+    <div class="timer" id="timer">15:00</div>
     <div class="ctl">
       <button class="btn" id="bShow">Mostrar pregunta</button>
       <button class="btn ghost hidden" id="bPause">Pausar</button>
-      <button class="btn ghost hidden" id="bTimeout">Se acabó el tiempo</button>
       <button class="btn hidden" id="bNext">Siguiente turno</button>
     </div>
-    <div class="muted" style="font-size:.85rem;text-align:center">El docente toca la opción que dice el grupo.<br>Teclas: A–D responder · Espacio pausar · Enter seguir<br>2 intentos por grupo · sin ayudas</div>
+    <div class="muted" style="font-size:.85rem;text-align:center">El docente toca la opción que dice el grupo.<br>Teclas: A–D responder · Espacio pausar · Enter seguir<br>2 intentos por pregunta · reloj por grupo · sin ayudas</div>
   </div>
 </section>
 
@@ -200,7 +199,7 @@
       ['Si el cortisol no baja tras 1 mg de dexametasona en la noche, ¿qué se sospecha?', ['Síndrome de Cushing','Enfermedad de Addison','Hipotiroidismo','Nada, es normal'], 'En una persona sana la dexametasona frena el eje y el cortisol baja.'],
       ['En la amenaza de parto prematuro se da betametasona o dexametasona a la madre. ¿Para qué?', ['Para madurar el pulmón fetal','Para detener las contracciones','Para bajar la presión','Para evitar infecciones'], 'Aceleran la producción de surfactante en el pulmón del feto.'] ]}
   ];
-  const PIN='1711', KEY='escape-corti-proj-v3', TRIES=2;
+  const PIN='1711', KEY='escape-corti-proj-v4', TRIES=2;
   const L=['A','B','C','D'];
   const $=id=>document.getElementById(id);
   const mmss=s=>{s=Math.max(0,Math.round(s));const m=Math.floor(s/60),x=s%60;return (m<10?'0':'')+m+':'+(x<10?'0':'')+x;};
@@ -215,18 +214,19 @@
   const save=()=>{mem=st;try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}};
   let st=load();
 
-  function newGame(nG,T){
-    st={nG,T,sala:0,turn:0,phase:'ready',res:[],out:Array(nG).fill(false),left:T,runFrom:null,tries:0,usedPrev:0,wrong:[]};
+  function newGame(nG,M){
+    st={nG,M,bank:Array(nG).fill(M*60),sala:0,turn:0,phase:'ready',res:[],out:Array(nG).fill(false),runFrom:null,tries:0,wrong:[],qStart:0,why:''};
     for(let g=0;g<nG;g++) st.res.push(Array(SALAS.length).fill(null));
     save();
   }
   const groupOf=(s,k)=>(s+k)%st.nG;
-  const groupTime=g=>st.res[g].reduce((a,r)=>a+(r?r.t:0),0);
+  const cur=()=>groupOf(st.sala,st.turn);
   const groupOk=g=>st.res[g].filter(r=>r&&r.ok).length;
   const nota=g=>groupOk(g)*PTS;
-  const remaining=()=>st.runFrom? st.left-(Date.now()-st.runFrom)/1000 : st.left;
+  const bankNow=g=>(st.runFrom && st.phase==='ask' && g===cur()) ? st.bank[g]-(Date.now()-st.runFrom)/1000 : st.bank[g];
+  const groupTime=g=>st.M*60-Math.max(0,bankNow(g));
+  function commit(){ const g=cur(); if(st.runFrom){ st.bank[g]=Math.max(0,st.bank[g]-(Date.now()-st.runFrom)/1000); st.runFrom=null; } }
 
-  // busca el siguiente turno de un grupo que siga en juego; devuelve false si se acabó la sala
   function seekTurn(){
     while(st.turn<st.nG && st.out[groupOf(st.sala,st.turn)]) st.turn++;
     return st.turn<st.nG;
@@ -238,12 +238,12 @@
   function renderBoard(){
     const b=$('board'); b.innerHTML='';
     b.style.gridTemplateColumns='repeat('+st.nG+',1fr)';
-    const cur=(st.phase==='ready'||st.phase==='ask'||st.phase==='result')?groupOf(st.sala,st.turn):-1;
+    const c=(st.phase==='ready'||st.phase==='ask'||st.phase==='result')?cur():-1;
     for(let g=0;g<st.nG;g++){
       const locks=st.res[g].map(r=>r===null?'🔒':(r.ok?'🔓':'❌')).join('');
-      const d=document.createElement('div'); d.className='tile'+(g===cur?' now':'');
+      const d=document.createElement('div'); d.className='tile'+(g===c?' now':'');
       if(st.out[g]) d.style.opacity='.55';
-      d.innerHTML='<div class="g">G'+(g+1)+'</div><div class="locks">'+locks+'</div><div class="tt">'+fmtN(nota(g))+' / 20</div><div class="an">'+(st.out[g]?'<span style="color:var(--bad);font-weight:700">FUERA</span>':'Tiempo '+mmss(groupTime(g)))+'</div>';
+      d.innerHTML='<div class="g">G'+(g+1)+'</div><div class="locks">'+locks+'</div><div class="tt">'+fmtN(nota(g))+' / 20</div><div class="an">'+(st.out[g]?'<span style="color:var(--bad);font-weight:700">FUERA</span>':'⏱ <span data-bank="'+g+'">'+mmss(Math.max(0,bankNow(g)))+'</span>')+'</div>';
       b.appendChild(d);
     }
   }
@@ -252,10 +252,11 @@
     if(!st){show(['vSetup']);return;}
     if(st.phase==='between'||st.phase==='final'){renderBetween();return;}
     show(['vTop','vMain','board']);
-    const s=st.sala, k=st.turn, g=groupOf(s,k), Q=SALAS[s].q[k];
+    const s=st.sala, k=st.turn, g=cur(), Q=SALAS[s].q[k];
     $('salaTitle').textContent='Sala '+(s+1)+' de '+SALAS.length+' · '+SALAS[s].t;
     $('salaSub').textContent='Turno '+(k+1)+' de '+st.nG+' · cada candado vale '+fmtN(PTS)+' puntos';
     $('turnLbl').textContent='Turno de G'+(g+1);
+    $('timerLbl').textContent='Tiempo de G'+(g+1);
     $('tryLbl').textContent = st.phase==='result' ? '' : 'Intento '+(st.tries+1)+' de '+TRIES;
     $('tryLbl').style.color = st.tries>0 ? 'var(--bad)' : 'var(--muted)';
     $('readyG').textContent='G'+(g+1);
@@ -265,7 +266,6 @@
     $('bShow').classList.toggle('hidden',!ready);
     $('bPause').classList.toggle('hidden',st.phase!=='ask');
     $('bPause').textContent = st.runFrom ? 'Pausar' : 'Seguir';
-    $('bTimeout').classList.toggle('hidden',st.phase!=='ask');
     $('bNext').classList.toggle('hidden',st.phase!=='result');
     $('bNext').textContent = 'Siguiente';
     if(!ready){
@@ -284,10 +284,12 @@
       $('expl').classList.toggle('hidden',!showExpl);
       if(st.phase==='result'){
         $('expl').className='expl'+(r&&r.ok?'':' bad');
-        $('expl').innerHTML=(r&&r.ok?'<b>🔓 Candado abierto</b> (+'+fmtN(PTS)+' puntos, '+mmss(r.t)+'). ':'<b>❌ Dos intentos fallidos: G'+(g+1)+' queda fuera.</b> ')+Q[2];
+        const msg = r&&r.ok ? '<b>🔓 Candado abierto</b> (+'+fmtN(PTS)+' puntos, en '+mmss(r.t)+'). '
+                  : (st.why==='time' ? '<b>⏱ Se acabó el tiempo de G'+(g+1)+': queda fuera.</b> ' : '<b>❌ Dos intentos fallidos: G'+(g+1)+' queda fuera.</b> ');
+        $('expl').innerHTML=msg+Q[2];
       } else if(showExpl){
         $('expl').className='expl bad';
-        $('expl').innerHTML='<b>✖ Incorrecto.</b> Les queda un intento.';
+        $('expl').innerHTML='<b>✖ Incorrecto.</b> Les queda un intento y su reloj sigue corriendo.';
       }
     }
     renderBoard(); tick();
@@ -298,36 +300,28 @@
     const fin=st.phase==='final';
     $('betBadge').textContent= fin ? 'Cuarentena levantada' : 'Sala terminada';
     $('betTitle').textContent= fin ? 'Resultado final' : 'Fin de la sala '+(st.sala+1)+' · '+SALAS[st.sala].t;
-    $('betSub').textContent= fin ? 'Nota sobre 20: cada candado vale '+fmtN(PTS)+' puntos.' : 'Así va el marcador.';
+    $('betSub').textContent= fin ? 'Nota sobre 20: cada candado vale '+fmtN(PTS)+' puntos. Empate: gana quien usó menos tiempo.' : 'Así va el marcador.';
     $('bNextSala').classList.toggle('hidden',fin);
-    const rows=[...Array(st.nG).keys()].map(g=>({g,n:nota(g),ok:groupOk(g),t:groupTime(g),out:st.out[g]})).sort((a,b)=>b.n-a.n||a.t-b.t);
-    let h='<tr><th>Puesto</th><th>Laboratorio</th><th>Candados</th><th>Nota / 20</th><th>Tiempo</th><th>Estado</th></tr>';
-    rows.forEach((r,i)=>{const c=i===0?'pod1':i===1?'pod2':i===2?'pod3':'';h+='<tr class="'+c+'"><td class="n">'+(i+1)+'.º</td><td class="disp">G'+(r.g+1)+'</td><td class="n">'+r.ok+' de '+SALAS.length+'</td><td class="n"><b>'+fmtN(r.n)+'</b></td><td class="n">'+mmss(r.t)+'</td><td>'+(r.out?'<span style="color:var(--bad)">Fuera</span>':(fin&&r.ok===SALAS.length?'<span style="color:var(--ok)">Escapó</span>':'En juego'))+'</td></tr>';});
+    const rows=[...Array(st.nG).keys()].map(g=>({g,n:nota(g),ok:groupOk(g),t:groupTime(g),left:Math.max(0,st.bank[g]),out:st.out[g]})).sort((a,b)=>b.n-a.n||a.t-b.t);
+    let h='<tr><th>Puesto</th><th>Laboratorio</th><th>Candados</th><th>Nota / 20</th><th>Tiempo usado</th><th>Le queda</th><th>Estado</th></tr>';
+    rows.forEach((r,i)=>{const c=i===0?'pod1':i===1?'pod2':i===2?'pod3':'';h+='<tr class="'+c+'"><td class="n">'+(i+1)+'.º</td><td class="disp">G'+(r.g+1)+'</td><td class="n">'+r.ok+' de '+SALAS.length+'</td><td class="n"><b>'+fmtN(r.n)+'</b></td><td class="n">'+mmss(r.t)+'</td><td class="n">'+mmss(r.left)+'</td><td>'+(r.out?'<span style="color:var(--bad)">Fuera</span>':(fin&&r.ok===SALAS.length?'<span style="color:var(--ok)">Escapó</span>':'En juego'))+'</td></tr>';});
     $('rankTbl').innerHTML=h;
   }
 
-  function fail(oi,full){
-    const g=groupOf(st.sala,st.turn);
-    const used = full ? st.T : st.T - Math.max(0,remaining());
-    if(oi!==null && oi!==undefined) st.wrong.push(oi);
-    if(st.tries+1 < TRIES){
-      st.tries++; st.usedPrev += used; st.left=st.T; st.runFrom=Date.now();
-    } else {
-      st.res[g][st.sala]={ok:false,t:st.usedPrev+used};
-      st.out[g]=true; st.phase='result'; st.runFrom=null;
-    }
-    save(); render();
+  function finishTurn(ok,why){
+    const g=cur(); commit();
+    st.res[g][st.sala]={ok, t: st.qStart - st.bank[g]};
+    if(!ok) st.out[g]=true;
+    st.why=why||''; st.phase='result'; save(); render();
   }
   function answer(oi){
     if(st.phase!=='ask') return;
-    if(oi===0){
-      const g=groupOf(st.sala,st.turn);
-      st.res[g][st.sala]={ok:true,t:st.usedPrev+(st.T-Math.max(0,remaining()))};
-      st.phase='result'; st.runFrom=null; save(); render();
-    } else fail(oi);
+    if(oi===0) return finishTurn(true);
+    st.wrong.push(oi);
+    if(st.tries+1 < TRIES){ st.tries++; save(); render(); }
+    else finishTurn(false,'tries');
   }
-  function timeout(){ if(st.phase==='ask') fail(null,true); }
-  function resetTurn(){ st.tries=0; st.usedPrev=0; st.wrong=[]; st.left=st.T; st.runFrom=null; }
+  function resetTurn(){ st.tries=0; st.wrong=[]; st.runFrom=null; st.why=''; }
   function next(){
     if(st.phase!=='result') return;
     st.turn++; resetTurn();
@@ -343,10 +337,9 @@
     save(); render();
   }
 
-  $('btnGo').onclick=()=>{const nG=Math.min(6,Math.max(2,parseInt($('inG').value)||6));const T=Math.min(180,Math.max(20,parseInt($('inT').value)||60));newGame(nG,T);render();};
-  $('bShow').onclick=()=>{st.phase='ask';st.left=st.T;st.runFrom=Date.now();save();render();};
-  $('bPause').onclick=()=>{ if(st.runFrom){st.left=remaining();st.runFrom=null;} else st.runFrom=Date.now(); save(); render(); };
-  $('bTimeout').onclick=timeout;
+  $('btnGo').onclick=()=>{const nG=Math.min(6,Math.max(2,parseInt($('inG').value)||6));const M=Math.min(60,Math.max(3,parseInt($('inT').value)||15));newGame(nG,M);render();};
+  $('bShow').onclick=()=>{const g=cur(); st.phase='ask'; st.qStart=st.bank[g]; st.runFrom=Date.now(); save(); render();};
+  $('bPause').onclick=()=>{ if(st.runFrom){ commit(); } else st.runFrom=Date.now(); save(); render(); };
   $('bNext').onclick=next;
   $('bNextSala').onclick=nextSala;
 
@@ -363,11 +356,12 @@
   $('rYes').onclick=()=>{ if($('pinIn').value.trim()===PIN){ st=null; mem=null; try{localStorage.removeItem(KEY);}catch(e){} $('ovReset').classList.remove('on'); render(); } };
 
   function tick(){
-    if(!st||st.phase!=='ask'){ if(st&&st.phase==='ready'){$('timer').textContent=st.T;$('timer').classList.remove('low');} if(st&&st.phase==='result'){$('timer').classList.remove('low');} return; }
-    const r=remaining();
-    $('timer').textContent=Math.max(0,Math.ceil(r));
-    $('timer').classList.toggle('low',r<=10);
-    if(r<=0) timeout();
+    if(!st||st.phase==='between'||st.phase==='final') return;
+    const g=cur(); const r=bankNow(g);
+    $('timer').textContent=mmss(Math.max(0,Math.ceil(r)));
+    $('timer').classList.toggle('low', st.phase==='ask' && r<=60);
+    const sp=document.querySelector('[data-bank="'+g+'"]'); if(sp) sp.textContent=mmss(Math.max(0,Math.ceil(r)));
+    if(st.phase==='ask' && st.runFrom && r<=0) finishTurn(false,'time');
   }
   setInterval(tick,250);
   render();

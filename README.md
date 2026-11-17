@@ -12,13 +12,14 @@ En la planta de BioCorti S.A. se contaminó un lote de glucocorticoides y las pu
 
 ## Cómo se juega
 
-1. El docente abre el enlace en la computadora conectada al proyector, elige el número de grupos (2 a 6) y los segundos por pregunta (60 por defecto) y toca **Activar la alarma**.
-2. Hay **6 salas**. En cada sala, **cada grupo recibe su propia pregunta**, distinta a la de los demás, en su turno.
-3. En su turno, el docente toca **Mostrar pregunta** y corre el tiempo en la pantalla. El grupo responde en voz alta y el docente toca la opción que dijo (o la tecla A, B, C o D).
-4. Cada grupo tiene **2 intentos** por pregunta. Si acierta, abre su candado 🔓 y gana **3,33 puntos** (20 ÷ 6).
-5. Si falla los 2 intentos (o se le acaba el tiempo dos veces), **queda fuera del juego** y conserva los puntos que ya tenía. En las salas siguientes se salta su turno.
-6. **No hay ayudas** y no se puede ayudar a otro grupo.
-7. **Nota sobre 20:** abrir los 6 candados = 20/20. El empate se decide por el menor tiempo.
+1. El docente abre el enlace en la computadora conectada al proyector, elige el número de grupos (2 a 6) y los minutos por grupo (15 por defecto) y toca **Activar la alarma**.
+2. **Cada grupo tiene 15 minutos en total.** Su reloj corre solo durante su turno, como en el ajedrez; el tiempo que no usa lo conserva para las salas siguientes.
+3. Hay **6 salas**. En cada sala, **cada grupo recibe su propia pregunta**, distinta a la de los demás, en su turno.
+4. En su turno, el docente toca **Mostrar pregunta** y corre el reloj del grupo. El grupo responde en voz alta y el docente toca la opción que dijo (o la tecla A, B, C o D).
+5. Cada grupo tiene **2 intentos** por pregunta. Si acierta, abre su candado 🔓 y gana **3,33 puntos** (20 ÷ 6).
+6. Si falla los 2 intentos o **se le acaban sus 15 minutos**, **queda fuera del juego** y conserva los puntos que ya tenía. En las salas siguientes se salta su turno.
+7. **No hay ayudas** y no se puede ayudar a otro grupo.
+8. **Nota sobre 20:** abrir los 6 candados = 20/20. El empate se decide por el menor tiempo usado.
 
 El orden de los turnos rota en cada sala (en la sala 1 empieza G1, en la 2 empieza G2, etc.). La opción correcta y su explicación aparecen solo cuando el grupo acierta o queda fuera.
 
@@ -46,8 +47,8 @@ El orden de los turnos rota en cada sala (en la sala 1 empieza G1, en la 2 empie
 ## Controles del docente
 
 - **Mostrar pregunta** (o Enter): muestra la pregunta del grupo en turno y arranca el tiempo.
-- **A, B, C, D:** registra la respuesta del grupo. Si es incorrecta y le queda un intento, el tiempo vuelve a empezar.
-- **Pausar** (o Espacio) y **Se acabó el tiempo** (cuenta como intento fallido).
+- **A, B, C, D:** registra la respuesta del grupo. Si es incorrecta y le queda un intento, su reloj sigue corriendo.
+- **Pausar** (o Espacio): detiene el reloj del grupo en turno.
 - **Siguiente** (o Enter), **Siguiente sala** y **Reiniciar juego** (pide la clave del docente).
 - El avance se guarda en el navegador de la computadora: si se recarga la página, el juego sigue donde estaba.
 
@@ -56,8 +57,8 @@ El orden de los turnos rota en cada sala (en la sala 1 empieza G1, en la 2 empie
 - **Una sola página:** `index.html` (HTML, CSS y JavaScript juntos), sin servidor ni base de datos; solo carga las fuentes Chakra Petch e Inter de Google Fonts.
 - **Publicación:** GitHub Pages desde la rama `main`, carpeta `/(root)`. Cada cambio se publica solo en 1 o 2 minutos.
 - **Diseño:** pantalla de proyector (16:9), tema oscuro, marcador de los grupos siempre visible abajo.
-- **Estado:** `localStorage`, clave `escape-corti-proj-v3`.
-- **Parámetros:** segundos por pregunta (configurable al inicio), intentos por pregunta (`TRIES` = 2), puntos por candado (20 ÷ número de salas) y clave para reiniciar (`PIN`).
+- **Estado:** `localStorage`, clave `escape-corti-proj-v4`.
+- **Parámetros:** minutos por grupo (15, configurable al inicio), intentos por pregunta (`TRIES` = 2), puntos por candado (20 ÷ número de salas) y clave para reiniciar (`PIN`).
 - **Preguntas:** arreglo `SALAS` en `index.html`. Cada pregunta es `[enunciado, [correcta, distractor, distractor, distractor], explicación]`; la primera opción es la correcta y el juego mezcla el orden al mostrarlas, siempre igual para la misma pregunta.
 
 ## Créditos
